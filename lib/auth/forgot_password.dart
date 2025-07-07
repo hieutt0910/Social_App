@@ -69,9 +69,9 @@ class ForgotPasswordPage extends StatelessWidget {
                         'TYPE YOUR EMAIL',
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                           letterSpacing: 1.5,
-                          fontSize: 16,
+                          fontSize: 18,
                         ),
                       ),
                     ),
@@ -93,7 +93,7 @@ class ForgotPasswordPage extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Color(0xFF242424),
-                              fontSize: 16,
+                              fontSize: 18,
                               height: 1.6,
                               fontWeight: FontWeight.w600,
                             ),
@@ -109,7 +109,7 @@ class ForgotPasswordPage extends StatelessWidget {
                       hintText: 'Email',
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 100),
 
                     // Nút gửi
                     CustomButton(
@@ -119,7 +119,7 @@ class ForgotPasswordPage extends StatelessWidget {
                       },
                     ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 10),
 
                     // Image6 dưới cùng
                     Image.asset(

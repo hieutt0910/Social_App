@@ -77,9 +77,9 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           'SET NEW PASSWORD',
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
                             letterSpacing: 1.5,
-                            fontSize: 16,
+                            fontSize: 18,
                           ),
                         ),
                       ),
@@ -103,7 +103,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Color(0xFF242424),
-                              fontSize: 16,
+                              fontSize: 18,
                               height: 1.6,
                               fontWeight: FontWeight.w600,
                             ),
@@ -127,7 +127,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                       obscureText: true,
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 70),
 
                     // Nút Send
                     CustomButton(
@@ -136,7 +136,6 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                       },
                     ),
 
-                    const SizedBox(height: 32),
 
                     // Hình ảnh dưới cùng
                     Center(

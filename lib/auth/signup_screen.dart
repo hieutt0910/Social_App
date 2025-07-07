@@ -1,10 +1,131 @@
+import 'package:email_otp/email_otp.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../Reuse/Button.dart';
 import '../Reuse/TextField.dart';
 
-class SignUpPage extends StatelessWidget {
+class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
+
+  @override
+  _SignUpPageState createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signUp() async {
+    if (_isLoading) return;
+
+    // Kiểm tra email hợp lệ
+    if (!_emailController.text.trim().contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return;
+    }
+
+    // Kiểm tra mật khẩu và xác nhận mật khẩu
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty ||
+        _confirmPasswordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text.trim() !=
+        _confirmPasswordController.text.trim()) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
+      return;
+    }
+
+    if (_passwordController.text.trim().length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Đăng ký người dùng với Firebase
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
+      if (userCredential.user != null) {
+        // Gửi OTP
+        bool otpSent = await EmailOTP.sendOTP(
+          email: _emailController.text.trim(),
+        );
+        if (otpSent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('OTP sent to your email')),
+          );
+          Navigator.pushReplacementNamed(
+            context,
+            '/verify',
+            arguments: _emailController.text.trim(),
+          );
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Failed to send OTP')));
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorMessage =
+              'The email address is already in use by another account.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'The email address is not valid.';
+          break;
+        case 'weak-password':
+          errorMessage = 'The password is too weak.';
+          break;
+        default:
+          errorMessage = 'Error: ${e.message}';
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error signing up: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,41 +177,51 @@ class SignUpPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const CustomInputField(hintText: 'Email'),
+                    CustomInputField(
+                      hintText: 'Email',
+                      controller: _emailController,
+                    ),
                     const SizedBox(height: 16),
-                    const CustomInputField(
+                    CustomInputField(
                       hintText: 'Password',
                       obscureText: true,
+                      controller: _passwordController,
                     ),
                     const SizedBox(height: 16),
-                    const CustomInputField(
+                    CustomInputField(
                       hintText: 'Confirm Password',
                       obscureText: true,
+                      controller: _confirmPasswordController,
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 40),
                     CustomButton(
-                      text: 'SIGN UP',
-                      onPressed: () {
-                        // Xử lý đăng ký
-                      },
+                        text: 'SIGN UP',
+                        onPressed: _signUp,
+                        isLoading: _isLoading,
                     ),
                     const SizedBox(height: 30),
-                    const SizedBox(height: 24),
                     Center(
                       child: RichText(
                         text: TextSpan(
                           text: 'Already have account?',
-                          style: const TextStyle(color: Colors.black),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                          ),
                           children: [
                             TextSpan(
-                              text: ' SIGN UP',
+                              text: ' SIGN IN',
                               style: TextStyle(
                                 color: Colors.deepPurple.shade700,
                                 fontWeight: FontWeight.bold,
                               ),
-                              recognizer: TapGestureRecognizer()..onTap = () {
-                                Navigator.pushReplacementNamed(context, '/sign in');
-                              },
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/sign in',
+                                  );
+                                },
                             ),
                           ],
                         ),

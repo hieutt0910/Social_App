@@ -28,7 +28,7 @@ class _ChooseRolePageState extends State<ChooseRolePage> {
           ClipPath(
             child: Image.asset(
               'assets/images/img_2.png',
-              height: MediaQuery.of(context).size.height * 0.2,
+              height: MediaQuery.of(context).size.height * 0.18,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
@@ -44,7 +44,7 @@ class _ChooseRolePageState extends State<ChooseRolePage> {
                   const Text(
                     "Who are you?",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 20  ,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF242424),
                       letterSpacing: 2,

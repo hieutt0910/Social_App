@@ -1,10 +1,96 @@
+import 'dart:math';
+
+import 'package:email_otp/email_otp.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../Repository/dynamic_links_handler.dart';
 import '../Reuse/Button.dart';
 import '../Reuse/TextField.dart';
 
-class SignInPage extends StatelessWidget {
+class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
+
+  @override
+  _SignInPageState createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  String generateOtp() {
+    return (100000 + Random().nextInt(900000)).toString(); // Tạo mã OTP 6 chữ số
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    if (_isLoading) return;
+    try {
+      if (!_emailController.text.trim().contains('@')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid email address')),
+        );
+        return;
+      }
+
+      if (_passwordController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter your password')),
+        );
+        return;
+      }
+
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Đăng nhập với email và mật khẩu
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (userCredential.user != null) {
+        String otp = generateOtp();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('pending_otp', otp);
+        await prefs.setString('pending_email', _emailController.text.trim());
+
+        await DynamicLinksHandler.sendSignInLink(_emailController.text.trim(), customParams: {'otp': otp});
+        // Gửi liên kết xác thực qua email
+        await DynamicLinksHandler.sendSignInLink(
+          _emailController.text.trim(),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verification link sent to your email. Please check your inbox.')),
+        );
+
+        Navigator.pushNamed(
+          context,
+          '/verify',
+          arguments: _emailController.text.trim(),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +125,6 @@ class SignInPage extends StatelessWidget {
               ),
             ],
           ),
-
-          // Nội dung form bên dưới
           Expanded(
             child: Container(
               width: double.infinity,
@@ -57,18 +141,22 @@ class SignInPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const CustomInputField(hintText: 'Email'),
+                    CustomInputField(
+                      hintText: 'Email',
+                      controller: _emailController,
+                    ),
                     const SizedBox(height: 16),
-                    const CustomInputField(
+                    CustomInputField(
                       hintText: 'Password',
                       obscureText: true,
+                      controller: _passwordController,
                     ),
                     const SizedBox(height: 30),
                     InkWell(
                       onTap: () {
                         Navigator.pushReplacementNamed(context, '/forgot password');
                       },
-                      child: Align(
+                      child: const Align(
                         alignment: Alignment.center,
                         child: Padding(
                           padding: EdgeInsets.all(8),
@@ -77,27 +165,25 @@ class SignInPage extends StatelessWidget {
                             style: TextStyle(
                               color: Color(0xFF5252C7),
                               fontWeight: FontWeight.w500,
-                              fontSize: 13,
+                              fontSize: 18,
                               letterSpacing: 2,
                             ),
                           ),
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 30),
                     CustomButton(
                       text: 'LOG IN',
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/verify');
-                      },
+                      onPressed: _signIn,
+                      isLoading: _isLoading,
                     ),
                     const SizedBox(height: 48),
                     const Center(
                       child: Text(
                         'OR LOG IN BY',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 18,
                           color: Color(0xFF606060),
                           letterSpacing: 1.5,
                         ),
@@ -124,7 +210,6 @@ class SignInPage extends StatelessWidget {
                             ),
                           ),
                         ),
-
                       ),
                     ),
                     const SizedBox(height: 48),
@@ -132,7 +217,7 @@ class SignInPage extends StatelessWidget {
                       child: RichText(
                         text: TextSpan(
                           text: 'Don\'t have account?',
-                          style: const TextStyle(color: Colors.black),
+                          style: const TextStyle(color: Colors.black, fontSize: 18),
                           children: [
                             TextSpan(
                               text: ' SIGN UP',
@@ -140,11 +225,11 @@ class SignInPage extends StatelessWidget {
                                 color: Colors.deepPurple.shade700,
                                 fontWeight: FontWeight.bold,
                               ),
-                              recognizer: TapGestureRecognizer()..onTap = () {
-                                Navigator.pushReplacementNamed(context, '/sign up');
-                              },
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.pushReplacementNamed(context, '/sign up');
+                                },
                             ),
-
                           ],
                         ),
                       ),

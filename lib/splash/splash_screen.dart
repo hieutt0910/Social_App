@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -53,7 +54,7 @@ class BoardingPage extends StatelessWidget {
                 const Text(
                   'SHARE - INSPIRE - CONNECT',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     color: Colors.white,
                     letterSpacing: 2,
                   ),
@@ -61,7 +62,11 @@ class BoardingPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/sign in');
+                    if (FirebaseAuth.instance.currentUser != null) {
+                      Navigator.pushReplacementNamed(context, '/profile');
+                    } else {
+                      Navigator.pushReplacementNamed(context, '/sign in');
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0x4DD0D0D0),

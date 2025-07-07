@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AccountPage extends StatelessWidget {
@@ -39,7 +40,7 @@ class AccountPage extends StatelessWidget {
                             Navigator.pushNamed(context, '/user profile');
                           },
                           child: const CircleAvatar(
-                            radius: 28,
+                            radius: 32,
                             backgroundImage: AssetImage('assets/images/avatar.jpg'),
                           ),
                         ),
@@ -93,14 +94,14 @@ class AccountPage extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.only(left: 0),
                     children: [
-                      _buildItem(context: context, icon: Icons.email, label: "Email", routeName: '/other profile'),
-                      _buildItem(context: context, icon: Icons.camera_alt, label: "Instagram", routeName: '/instagram'),
-                      _buildItem(context: context, icon: Icons.alternate_email, label: "Twitter", routeName: '/twitter'),
-                      _buildItem(context: context, icon: Icons.language, label: "Website", routeName: '/website'),
-                      _buildItem(context: context, icon: Icons.payment, label: "Paypal", routeName: '/paypal'),
-                      _buildItem(context: context, icon: Icons.lock, label: "Change password", routeName: '/change-password'),
-                      _buildItem(context: context, icon: Icons.info_outline, label: "About i.click", routeName: '/about'),
-                      _buildItem(context: context, icon: Icons.privacy_tip, label: "Terms & privacy", routeName: '/terms'),
+                      _buildItem(context: context,  label: "Email", routeName: '/other profile'),
+                      _buildItem(context: context,  label: "Instagram", routeName: '/instagram'),
+                      _buildItem(context: context,  label: "Twitter", routeName: '/twitter'),
+                      _buildItem(context: context,  label: "Website", routeName: '/website'),
+                      _buildItem(context: context,  label: "Paypal", routeName: '/paypal'),
+                      _buildItem(context: context,  label: "Change password", routeName: '/change-password'),
+                      _buildItem(context: context,  label: "About i.click", routeName: '/about'),
+                      _buildItem(context: context,  label: "Terms & privacy", routeName: '/terms'),
 
                     ],
                   ),
@@ -114,11 +115,14 @@ class AccountPage extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.logout, color: Colors.black),
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.pushReplacementNamed(context, '/sign in');
+                      },
+                      icon: const Icon(Icons.logout, color: Colors.black, size: 24),
                       label: const Text(
                         "Log out",
-                        style: TextStyle(color: Colors.black),
+                        style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -140,7 +144,6 @@ class AccountPage extends StatelessWidget {
 
   Widget _buildItem({
     required BuildContext context,
-    required IconData icon,
     required String label,
     required String routeName,
   }) {
@@ -153,7 +156,7 @@ class AccountPage extends StatelessWidget {
         widthFactor: 0.7,
         child: Container(
           decoration: const BoxDecoration(
-            color: Color.fromRGBO(255, 255, 255, 0.1),
+            color: Color.fromRGBO(255, 255, 255, 0.2),
             borderRadius: BorderRadius.only(
               topRight: Radius.circular(40),
               bottomRight: Radius.circular(40),
@@ -163,12 +166,12 @@ class AccountPage extends StatelessWidget {
             contentPadding: const EdgeInsets.only(left: 16, right: 8),
             title: Text(
               label,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
             ),
             trailing: Image.asset(
               'assets/images/img_13.png',
-              width: 20,
-              height: 20,
+              width: 30,
+              height: 30,
               color: Colors.white,
             ),
             onTap: () {

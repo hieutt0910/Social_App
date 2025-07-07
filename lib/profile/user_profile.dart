@@ -131,13 +131,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     "Bruno Pham",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontSize: 22,
                     ),
                   ),
                   const SizedBox(height: 4),
                   const Text(
                     "Da Nang, Vietnam",
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Colors.grey,fontSize: 16),
                   ),
 
                   const SizedBox(height: 20),
@@ -153,13 +153,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Text("220", style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text("220", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16)),
                         SizedBox(width: 4),
-                        Text("Followers", style: TextStyle(color: Colors.grey)),
+                        Text("Followers", style: TextStyle(color: Colors.grey,fontSize: 16)),
                         SizedBox(width: 48),
-                        Text("150", style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text("150", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16)),
                         SizedBox(width: 4),
-                        Text("Following", style: TextStyle(color: Colors.grey)),
+                        Text("Following", style: TextStyle(color: Colors.grey,fontSize: 16)),
                       ],
                     ),
                   ),
@@ -224,6 +224,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   "$count ${tabs[index]}",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 16,
                                     color: isSelected
                                         ? const Color(0xFF6A6BF4)
                                         : const Color(0xFFB8B8B8),
