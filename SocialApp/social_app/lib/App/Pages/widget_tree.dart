@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:social_app/App/Pages/category_page.dart';
 import 'package:social_app/App/Pages/home_page.dart';
+import 'package:social_app/App/Pages/profile/profile_screen.dart';
 import 'package:social_app/App/Widgets/bottom_navigation.dart';
 import 'package:social_app/App/Widgets/navbar_icon.dart';
 
@@ -18,7 +19,7 @@ class _WidgetTreeState extends State<WidgetTree> {
     HomePage(),
     CategoryPage(),
     Center(child: Text('Trang 3')),
-    Center(child: Text('Trang 4')),
+    AccountPage(),
   ];
 
   @override

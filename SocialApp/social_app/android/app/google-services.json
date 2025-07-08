@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "531305061690",
+    "project_id": "social-app-feadc",
+    "storage_bucket": "social-app-feadc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:531305061690:android:2e7b72305c11f087888403",
+        "android_client_info": {
+          "package_name": "com.example.final_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkMeoWvVw20vUyR3H-NjKLeJz3_85qOlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:531305061690:android:19b73d9adc5d16c9888403",
+        "android_client_info": {
+          "package_name": "com.example.social_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkMeoWvVw20vUyR3H-NjKLeJz3_85qOlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
