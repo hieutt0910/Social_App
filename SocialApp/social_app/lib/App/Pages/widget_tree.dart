@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:social_app/App/Pages/category_page.dart';
-import 'package:social_app/App/Pages/home_page.dart';
-import 'package:social_app/App/Pages/profile/profile_screen.dart';
+import 'package:social_app/App/pages/category_page.dart';
+import 'package:social_app/App/pages/home_page.dart';
+import 'package:social_app/App/pages/profile/profile_screen.dart';
 import 'package:social_app/App/Widgets/bottom_navigation.dart';
 import 'package:social_app/App/Widgets/navbar_icon.dart';
 
