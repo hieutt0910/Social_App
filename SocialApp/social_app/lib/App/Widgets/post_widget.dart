@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:social_app/App/utils/assets_manage.dart';
 
 class PostWidget extends StatelessWidget {
   const PostWidget({super.key});
@@ -20,11 +20,13 @@ class PostWidget extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.network(
-                  "https://avatar.iran.liara.run/public",
+                AssetsManager.showImage(
+                  'https://avatar.iran.liara.run/public',
                   height: 30,
                   width: 30,
+                  fit: BoxFit.cover,
                 ),
+
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -47,7 +49,7 @@ class PostWidget extends StatelessWidget {
             ),
           ),
           ClipRRect(
-            child: Image.network(
+            child: AssetsManager.showImage(
               "https://picsum.photos/300/200",
               width: double.infinity,
               fit: BoxFit.fitWidth,
@@ -59,10 +61,11 @@ class PostWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SvgPicture.asset(
+                AssetsManager.showImage(
                   "assets/icons/plus-circle.svg",
                   height: 20,
                   width: 20,
+                  fit: BoxFit.contain,
                 ),
                 Row(
                   children: [
@@ -75,11 +78,13 @@ class PostWidget extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 6),
-                    SvgPicture.asset(
+                    AssetsManager.showImage(
                       "assets/icons/comment.svg",
-                      height: 20,
                       width: 20,
+                      height: 20,
+                      fit: BoxFit.contain,
                     ),
+
                     SizedBox(width: 6),
                     Text(
                       '12',
@@ -90,10 +95,11 @@ class PostWidget extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 12),
-                    SvgPicture.asset(
+                    AssetsManager.showImage(
                       "assets/icons/like.svg",
                       height: 20,
                       width: 20,
+                      fit: BoxFit.contain,
                     ),
                   ],
                 ),

@@ -20,7 +20,8 @@ class _SignInPageState extends State<SignInPage> {
   bool _isLoading = false;
 
   String generateOtp() {
-    return (100000 + Random().nextInt(900000)).toString(); // Tạo mã OTP 6 chữ số
+    return (100000 + Random().nextInt(900000))
+        .toString(); // Tạo mã OTP 6 chữ số
   }
 
   @override
@@ -51,10 +52,11 @@ class _SignInPageState extends State<SignInPage> {
         _isLoading = true;
       });
 
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
 
       if (userCredential.user != null) {
         String otp = generateOtp();
@@ -68,7 +70,11 @@ class _SignInPageState extends State<SignInPage> {
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Verification code sent to your email. Please check your inbox.')),
+          SnackBar(
+            content: Text(
+              'Verification code sent to your email. Please check your inbox.',
+            ),
+          ),
         );
 
         Navigator.pushNamed(
@@ -76,11 +82,12 @@ class _SignInPageState extends State<SignInPage> {
           '/verify',
           arguments: _emailController.text.trim(),
         );
+        
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       setState(() {
         _isLoading = false;
@@ -124,9 +131,7 @@ class _SignInPageState extends State<SignInPage> {
           Expanded(
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
+              decoration: const BoxDecoration(color: Colors.white),
               child: SingleChildScrollView(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom + 24,
@@ -150,7 +155,10 @@ class _SignInPageState extends State<SignInPage> {
                     const SizedBox(height: 30),
                     InkWell(
                       onTap: () {
-                        Navigator.pushReplacementNamed(context, '/forgot password');
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/forgot password',
+                        );
                       },
                       child: const Align(
                         alignment: Alignment.center,
@@ -213,7 +221,10 @@ class _SignInPageState extends State<SignInPage> {
                       child: RichText(
                         text: TextSpan(
                           text: 'Don\'t have account?',
-                          style: const TextStyle(color: Colors.black, fontSize: 18),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                          ),
                           children: [
                             TextSpan(
                               text: ' SIGN UP',
@@ -221,10 +232,14 @@ class _SignInPageState extends State<SignInPage> {
                                 color: Colors.deepPurple.shade700,
                                 fontWeight: FontWeight.bold,
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  Navigator.pushReplacementNamed(context, '/sign up');
-                                },
+                              recognizer:
+                                  TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        '/sign up',
+                                      );
+                                    },
                             ),
                           ],
                         ),

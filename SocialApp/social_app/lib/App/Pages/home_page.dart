@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage>
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -194,7 +194,7 @@ class _GradientTabState extends State<_GradientTab> {
     return Center(
       child:
           isSelected
-              ? GradientText(text: widget.text,fontSize: 16,)
+              ? GradientText(text: widget.text, fontSize: 16)
               : Text(
                 widget.text,
                 style: const TextStyle(

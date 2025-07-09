@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:social_app/App/Widgets/gradient_text.dart';
 import 'package:social_app/App/Widgets/search_bar_widget.dart';
+import 'package:social_app/app/widgets/category_type.dart';
+import 'package:social_app/app/widgets/list_category.dart';
 
 class CategoryPage extends StatelessWidget {
   const CategoryPage({super.key});
@@ -10,6 +10,30 @@ class CategoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextEditingController searchController = TextEditingController();
+    final List<String> imageTopicPaths = [
+      'assets/images/topic_photography.png',
+      'assets/images/topic_uidesign.png',
+      'assets/images/topic_illustration.png',
+      'assets/images/topic_travel.png',
+    ];
+    final List<String> titlesTopic = [
+      'PHOTOGRAPHY',
+      'UI DESIGN',
+      'ILLUSTRATION',
+      'TRAVEL',
+    ];
+    final List<String> titlesCollection = [
+      'PORTRAIT PHOTOGRAPHY',
+      'MUSIC VIDEO',
+      'FASHION EDITORIAL',
+      'SHORT FILM',
+    ];
+    final List<String> titlesCommunity = [
+      'STREET STYLE',
+      'DAILY LIFE',
+      'FOOD & COFFEE',
+      'EVENT & FESTIVAL',
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -20,7 +44,7 @@ class CategoryPage extends StatelessWidget {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -58,24 +82,28 @@ class CategoryPage extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 20),
           Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Topic",
-                      style: GoogleFonts.manrope(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    GradientText(text: 'View more', fontSize: 14),
-                  ],
-                ),
+              CategoryType(nameCategory: 'Topic'),
+              ListCategory(
+                imageUrls: imageTopicPaths,
+                titles: titlesTopic,
+                height: 100,
+                cardWidth: 150,
+              ),
+              CategoryType(nameCategory: 'Collection'),
+              ListCategory(
+                imageUrls: imageTopicPaths,
+                titles: titlesCollection,
+                height: 158,
+                cardWidth: 158,
+              ),
+              CategoryType(nameCategory: 'Community'),
+              ListCategory(
+                imageUrls: imageTopicPaths,
+                titles: titlesCommunity,
+                height: 158,
+                cardWidth: 158,
               ),
             ],
           ),
