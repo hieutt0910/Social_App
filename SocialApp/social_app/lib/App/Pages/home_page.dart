@@ -33,121 +33,124 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: SearchBarWidget(
-                    controller: _searchController,
-                    hintText: 'Search',
-                    onChanged: (value) {},
-                  ),
-                ),
-                const SizedBox(width: 20),
-                GestureDetector(
-                  onTap: () {},
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F5F7),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: SvgPicture.asset(
-                      'assets/icons/send.svg',
-                      width: 20,
-                      height: 20,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.black,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicator: BoxDecoration(
-                  color: const Color(0xFFF1F1FE),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                labelColor: Colors.black,
-                unselectedLabelColor: const Color(0xFFBDBDBD),
-                dividerColor: Colors.transparent,
-                tabs:
-                    tabTitles.map((title) {
-                      return Tab(
-                        child: _GradientTab(
-                          text: title,
-                          tabController: _tabController,
-                          index: tabTitles.indexOf(title),
-                        ),
-                      );
-                    }).toList(),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 20, 20, 0),
-              child: TabBarView(
-                controller: _tabController,
+      body: Padding(
+        padding: const EdgeInsets.only(top: 50),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Center(
-                    child: ListView.separated(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      itemCount: 10,
-                      itemBuilder: (context, index) {
-                        return PostWidget();
-                      },
-                      separatorBuilder: (context, index) {
-                        return SizedBox(height: 16);
-                      },
+                  Expanded(
+                    child: SearchBarWidget(
+                      controller: _searchController,
+                      hintText: 'Search',
+                      onChanged: (value) {},
                     ),
                   ),
-                  Center(
-                    child: ListView.separated(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      itemCount: 10,
-                      itemBuilder: (context, index) {
-                        return PostWidget();
-                      },
-                      separatorBuilder: (context, index) {
-                        return SizedBox(height: 16);
-                      },
-                    ),
-                  ),
-                  Center(
-                    child: ListView.separated(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      itemCount: 10,
-                      itemBuilder: (context, index) {
-                        return PostWidget();
-                      },
-                      separatorBuilder: (context, index) {
-                        return SizedBox(height: 16);
-                      },
+                  const SizedBox(width: 20),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F5F7),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: SvgPicture.asset(
+                        'assets/icons/send.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.black,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: const Color(0xFFF1F1FE),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  labelColor: Colors.black,
+                  unselectedLabelColor: const Color(0xFFBDBDBD),
+                  dividerColor: Colors.transparent,
+                  tabs:
+                  tabTitles.map((title) {
+                    return Tab(
+                      child: _GradientTab(
+                        text: title,
+                        tabController: _tabController,
+                        index: tabTitles.indexOf(title),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20.0, 20, 20, 0),
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    Center(
+                      child: ListView.separated(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        itemCount: 10,
+                        itemBuilder: (context, index) {
+                          return PostWidget();
+                        },
+                        separatorBuilder: (context, index) {
+                          return SizedBox(height: 16);
+                        },
+                      ),
+                    ),
+                    Center(
+                      child: ListView.separated(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        itemCount: 10,
+                        itemBuilder: (context, index) {
+                          return PostWidget();
+                        },
+                        separatorBuilder: (context, index) {
+                          return SizedBox(height: 16);
+                        },
+                      ),
+                    ),
+                    Center(
+                      child: ListView.separated(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        itemCount: 10,
+                        itemBuilder: (context, index) {
+                          return PostWidget();
+                        },
+                        separatorBuilder: (context, index) {
+                          return SizedBox(height: 16);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
 
@@ -16,8 +18,7 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-  TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -44,18 +45,15 @@ class _SignUpPageState extends State<SignUpPage> {
         _passwordController.text.trim().isEmpty ||
         _confirmPasswordController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all fields'),
-        ),
+        const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
 
-    if (_passwordController.text.trim() !=
-        _confirmPasswordController.text.trim()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
+    if (_passwordController.text.trim() != _confirmPasswordController.text.trim()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
       return;
     }
 
@@ -71,39 +69,37 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     try {
+      // Lưu email và mật khẩu tạm thời
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pending_email', _emailController.text.trim());
+      await prefs.setString('temp_password', _passwordController.text.trim());
+
       // Đăng ký người dùng với Firebase
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // if (userCredential.user != null) {
-      //   // Gửi OTP
-      //   bool otpSent = await EmailOTP.sendOTP(
-      //     email: _emailController.text.trim(),
-      //   );
-      //   if (otpSent) {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       const SnackBar(content: Text('OTP sent to your email')),
-      //     );
-      //     Navigator.pushReplacementNamed(
-      //       context,
-      //       '/verify',
-      //       arguments: _emailController.text.trim(),
-      //     );
-      //   } else {
-      //     ScaffoldMessenger.of(
-      //       context,
-      //     ).showSnackBar(const SnackBar(content: Text('Failed to send OTP')));
-      //   }
-      // }
+      // Gửi liên kết xác thực chứa OTP qua email
+      await DynamicLinksHandler.sendSignInLink(_emailController.text.trim());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Verification link with OTP sent to your email. Please check your inbox.'),
+        ),
+      );
+
+      // Điều hướng đến trang xác thực
+      Navigator.pushNamed(
+        context,
+        '/verify',
+        arguments: {'email': _emailController.text.trim(), 'fromRoute': 'sign_up'},
+      );
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
         case 'email-already-in-use':
-          errorMessage =
-          'The email address is already in use by another account.';
+          errorMessage = 'The email address is already in use by another account.';
           break;
         case 'invalid-email':
           errorMessage = 'The email address is not valid.';
@@ -114,13 +110,13 @@ class _SignUpPageState extends State<SignUpPage> {
         default:
           errorMessage = 'Error: ${e.message}';
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error signing up: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing up: $e')),
+      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -134,7 +130,6 @@ class _SignUpPageState extends State<SignUpPage> {
       resizeToAvoidBottomInset: true,
       body: Column(
         children: [
-          // Ảnh nền + bo góc + nền trắng đè
           Stack(
             children: [
               ClipRRect(
@@ -162,8 +157,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ],
           ),
-
-          // Form Đăng Ký
           Expanded(
             child: Container(
               width: double.infinity,
@@ -205,10 +198,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       child: RichText(
                         text: TextSpan(
                           text: 'Already have account?',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                          ),
+                          style: const TextStyle(color: Colors.black, fontSize: 18),
                           children: [
                             TextSpan(
                               text: ' SIGN IN',
@@ -218,10 +208,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.pushReplacementNamed(
-                                    context,
-                                    '/sign in',
-                                  );
+                                  Navigator.pushReplacementNamed(context, '/sign in');
                                 },
                             ),
                           ],
