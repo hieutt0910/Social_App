@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class DynamicLinksHandler {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final StreamController<void> _linkHandledStream = StreamController<void>.broadcast();
+
+  static Stream<void> get onLinkHandled => _linkHandledStream.stream;
 
   static Future<void> initDynamicLinks() async {
     FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData? dynamicLink) async {
@@ -12,6 +17,7 @@ class DynamicLinksHandler {
       print('Received deep link: $deepLink');
       if (deepLink != null) {
         await _handleDynamicLink(deepLink);
+        _linkHandledStream.add(null);
       }
     });
 
@@ -21,6 +27,7 @@ class DynamicLinksHandler {
       print('Received initial link: $deepLink');
       if (deepLink != null) {
         await _handleDynamicLink(deepLink);
+        _linkHandledStream.add(null);
       }
     }
   }
@@ -39,15 +46,15 @@ class DynamicLinksHandler {
     }
 
     if (email.isNotEmpty) {
-      // Không cần signInWithEmailLink nếu chỉ dùng OTP thủ công
       navigatorKey.currentState?.pushReplacementNamed('/verify', arguments: email);
     }
   }
 
   static Future<void> sendSignInLink(String email, {Map<String, String>? customParams}) async {
     try {
-      String url = 'https://socialapp678.page.link/4Yif';
-      print('Sending link with URL: $url');
+      String otp = (100000 + Random().nextInt(900000)).toString();
+      String url = 'https://socialapp678.page.link?otp=$otp&email=$email';
+      print('Gửi link với URL: $url');
 
       var actionCodeSettings = ActionCodeSettings(
         url: url,
@@ -60,15 +67,21 @@ class DynamicLinksHandler {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('pending_email', email);
-      print('Pending email saved: $email');
+      await prefs.setString('pending_otp', otp);
+      print('Đã lưu email đang chờ: $email');
+      print('Đã lưu OTP đang chờ: $otp');
 
       await FirebaseAuth.instance.sendSignInLinkToEmail(
         email: email,
         actionCodeSettings: actionCodeSettings,
       );
-      print('Sign-in link sent to: $email');
+      print('Đã gửi link xác thực tới: $email');
     } catch (e) {
-      print('Error sending link: $e');
+      print('Lỗi khi gửi link: $e');
     }
+  }
+
+  static void dispose() {
+    _linkHandledStream.close();
   }
 }

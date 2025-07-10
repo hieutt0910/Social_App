@@ -111,7 +111,7 @@ class AccountPage extends StatelessWidget {
 
                 // Logout button
                 Padding(
-                  padding: const EdgeInsets.only(left: 36, bottom: 176),
+                  padding: const EdgeInsets.only(left: 36, bottom: 80),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: ElevatedButton.icon(

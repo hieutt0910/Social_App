@@ -25,7 +25,6 @@ class _WidgetTreeState extends State<WidgetTree> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
       backgroundColor: const Color(0xFFF5F6FA),
       resizeToAvoidBottomInset: false,
       body: IndexedStack(index: _pageIndex, children: _pages),

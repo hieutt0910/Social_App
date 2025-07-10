@@ -1,11 +1,81 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
 
 
-class ForgotPasswordPage extends StatelessWidget {
+class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
+
+  @override
+  _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
+}
+
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+  final TextEditingController _emailController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendResetLink() async {
+    if (_isLoading) return;
+
+    // Kiểm tra email hợp lệ
+    if (!_emailController.text.trim().contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return;
+    }
+
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your email')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Lưu email vào SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pending_email', _emailController.text.trim());
+
+      // Gửi liên kết xác thực chứa OTP qua email
+      await DynamicLinksHandler.sendSignInLink(_emailController.text.trim());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Verification link with OTP sent to your email. Please check your inbox.'),
+        ),
+      );
+
+      // Điều hướng đến trang xác thực
+      Navigator.pushNamed(
+        context,
+        '/verify',
+        arguments: {'email': _emailController.text.trim(), 'fromRoute': 'forgot_password'},
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending reset link: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +83,6 @@ class ForgotPasswordPage extends StatelessWidget {
       resizeToAvoidBottomInset: true,
       body: Column(
         children: [
-          // Ảnh nền
           Stack(
             children: [
               ClipRRect(
@@ -41,8 +110,6 @@ class ForgotPasswordPage extends StatelessWidget {
               ),
             ],
           ),
-
-          // Nội dung form bên dưới
           Expanded(
             child: Container(
               width: double.infinity,
@@ -56,7 +123,6 @@ class ForgotPasswordPage extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    // Tiêu đề
                     ShaderMask(
                       shaderCallback: (bounds) {
                         return const LinearGradient(
@@ -78,8 +144,6 @@ class ForgotPasswordPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    // Thông báo
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Container(
@@ -91,7 +155,7 @@ class ForgotPasswordPage extends StatelessWidget {
                         ),
                         child: const Center(
                           child: Text(
-                            'We will send you instruction on\nhow to reset your password',
+                            'We will send you a verification code\nto reset your password',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Color(0xFF242424),
@@ -103,27 +167,18 @@ class ForgotPasswordPage extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 30),
-
-                    // Ô nhập email
-                    const CustomInputField(
+                    CustomInputField(
                       hintText: 'Email',
+                      controller: _emailController,
                     ),
-
                     const SizedBox(height: 100),
-
-                    // Nút gửi
                     CustomButton(
                       text: 'SEND',
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/set new password');
-                      },
+                      onPressed: _sendResetLink,
+                      isLoading: _isLoading,
                     ),
-
                     const SizedBox(height: 10),
-
-                    // Image6 dưới cùng
                     Image.asset(
                       'assets/images/img_1.png',
                       width: 280,

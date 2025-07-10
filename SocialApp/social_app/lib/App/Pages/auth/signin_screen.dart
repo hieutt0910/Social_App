@@ -1,11 +1,13 @@
-import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
+
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -19,9 +21,16 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  String generateOtp() {
-    return (100000 + Random().nextInt(900000))
-        .toString(); // Tạo mã OTP 6 chữ số
+  @override
+  void initState() {
+    super.initState();
+    // Kiểm tra arguments để tự động điền email
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['email'] != null) {
+        _emailController.text = args['email'];
+      }
+    });
   }
 
   @override
@@ -52,42 +61,124 @@ class _SignInPageState extends State<SignInPage> {
         _isLoading = true;
       });
 
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-          );
+      // Lưu email và mật khẩu tạm thời
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pending_email', _emailController.text.trim());
+      await prefs.setString('temp_password', _passwordController.text.trim());
 
-      if (userCredential.user != null) {
-        String otp = generateOtp();
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('pending_otp', otp);
-        await prefs.setString('pending_email', _emailController.text.trim());
+      // Đăng nhập với email và mật khẩu
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-        await DynamicLinksHandler.sendSignInLink(
-          _emailController.text.trim(),
-          customParams: {'otp': otp},
+      // Kiểm tra nếu từ set_new_password
+      final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final String fromRoute = args?['fromRoute'] ?? '';
+
+      if (fromRoute == 'set_new_password') {
+        Navigator.pushNamed(
+          context,
+          '/set new password',
+          arguments: {'email': _emailController.text.trim()},
         );
+      } else {
+        // Gửi liên kết xác thực chứa OTP qua email
+        await DynamicLinksHandler.sendSignInLink(_emailController.text.trim());
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Verification code sent to your email. Please check your inbox.',
-            ),
-          ),
+          const SnackBar(content: Text('Verification link with OTP sent to your email. Please check your inbox.')),
         );
 
         Navigator.pushNamed(
           context,
           '/verify',
-          arguments: _emailController.text.trim(),
+          arguments: {'email': _emailController.text.trim(), 'fromRoute': 'sign_in'},
         );
-        
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No user found for that email.';
+          break;
+        case 'wrong-password':
+          errorMessage = 'Incorrect password.';
+          break;
+        default:
+          errorMessage = 'Error: ${e.message}';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      // Khởi tạo GoogleSignIn
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      // Đăng nhập Google
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        // Người dùng hủy đăng nhập
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google Sign-In cancelled')),
+        );
+        return;
+      }
+
+      // Lấy thông tin xác thực Google
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Đăng nhập Firebase với thông tin Google
+      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        // Lưu email vào SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('pending_email', user.email ?? '');
+
+        // Gửi liên kết xác thực chứa OTP qua email
+        await DynamicLinksHandler.sendSignInLink(user.email ?? '');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verification link with OTP sent to your email. Please check your inbox.')),
+        );
+
+        // Điều hướng đến VerifyPage
+        Navigator.pushNamed(
+          context,
+          '/verify',
+          arguments: {'email': user.email ?? '', 'fromRoute': 'sign_in'},
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to sign in with Google')),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing in with Google: $e')),
+      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -131,7 +222,9 @@ class _SignInPageState extends State<SignInPage> {
           Expanded(
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(color: Colors.white),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
               child: SingleChildScrollView(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom + 24,
@@ -155,10 +248,7 @@ class _SignInPageState extends State<SignInPage> {
                     const SizedBox(height: 30),
                     InkWell(
                       onTap: () {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/forgot password',
-                        );
+                        Navigator.pushNamed(context, '/forgot password');
                       },
                       child: const Align(
                         alignment: Alignment.center,
@@ -204,9 +294,7 @@ class _SignInPageState extends State<SignInPage> {
                         ),
                         child: Center(
                           child: GestureDetector(
-                            onTap: () {
-                              print('Image tapped!');
-                            },
+                            onTap: _signInWithGoogle,
                             child: Image.asset(
                               'assets/images/img.png',
                               width: 24,
@@ -221,10 +309,7 @@ class _SignInPageState extends State<SignInPage> {
                       child: RichText(
                         text: TextSpan(
                           text: 'Don\'t have account?',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                          ),
+                          style: const TextStyle(color: Colors.black, fontSize: 18),
                           children: [
                             TextSpan(
                               text: ' SIGN UP',
@@ -232,20 +317,15 @@ class _SignInPageState extends State<SignInPage> {
                                 color: Colors.deepPurple.shade700,
                                 fontWeight: FontWeight.bold,
                               ),
-                              recognizer:
-                                  TapGestureRecognizer()
-                                    ..onTap = () {
-                                      Navigator.pushReplacementNamed(
-                                        context,
-                                        '/sign up',
-                                      );
-                                    },
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.pushNamed(context, '/sign up');
+                                },
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),

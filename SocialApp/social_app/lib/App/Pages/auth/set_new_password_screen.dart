@@ -1,23 +1,122 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
+
 
 class SetNewPasswordPage extends StatefulWidget {
   const SetNewPasswordPage({super.key});
 
   @override
-  State<SetNewPasswordPage> createState() => _SetNewPasswordPageState();
+  _SetNewPasswordPageState createState() => _SetNewPasswordPageState();
 }
 
 class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
+  final TextEditingController _oldPasswordController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _oldPasswordController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _setNewPassword(String email) async {
+    if (_isLoading) return;
+
+    // Kiểm tra các trường nhập
+    if (_oldPasswordController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty ||
+        _confirmPasswordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    if (_passwordController.text.trim() != _confirmPasswordController.text.trim()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('New passwords do not match')),
+      );
+      return;
+    }
+
+    if (_passwordController.text.trim().length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('New password must be at least 6 characters')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Đăng nhập lại với mật khẩu cũ
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: _oldPasswordController.text.trim(),
+      );
+
+      // Cập nhật mật khẩu mới
+      await FirebaseAuth.instance.currentUser!.updatePassword(
+        _passwordController.text.trim(),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password changed successfully')),
+      );
+
+      // Chuyển hướng về trang đăng nhập
+      Navigator.pushNamed(context, '/sign in');
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No user found for this email.';
+          break;
+        case 'wrong-password':
+          errorMessage = 'Incorrect old password.';
+          break;
+        case 'requires-recent-login':
+          errorMessage = 'Please re-sign in and try again.';
+          Navigator.pushNamed(
+            context,
+            '/sign in',
+            arguments: {'email': email, 'fromRoute': 'set_new_password'},
+          );
+          break;
+        default:
+          errorMessage = 'Error: ${e.message}';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error setting new password: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final String email = args?['email'] ?? '';
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Column(
         children: [
-          // Ảnh nền
           Stack(
             children: [
               ClipRRect(
@@ -45,8 +144,6 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
               ),
             ],
           ),
-
-          // Nội dung form
           Expanded(
             child: Container(
               width: double.infinity,
@@ -61,7 +158,6 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Tiêu đề gradient
                     Center(
                       child: ShaderMask(
                         shaderCallback: (bounds) {
@@ -84,10 +180,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Container hướng dẫn
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Container(
@@ -99,7 +192,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         ),
                         child: const Center(
                           child: Text(
-                            'Type your new password',
+                            'Enter your old password and new password',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Color(0xFF242424),
@@ -111,33 +204,30 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 30),
-
-                    // Password
                     CustomInputField(
-                      hintText: 'Password',
+                      hintText: 'Old Password',
                       obscureText: true,
+                      controller: _oldPasswordController,
                     ),
                     const SizedBox(height: 16),
-
-                    // Confirm Password
                     CustomInputField(
-                      hintText: 'Confirm Password',
+                      hintText: 'New Password',
                       obscureText: true,
+                      controller: _passwordController,
                     ),
-
+                    const SizedBox(height: 16),
+                    CustomInputField(
+                      hintText: 'Confirm New Password',
+                      obscureText: true,
+                      controller: _confirmPasswordController,
+                    ),
                     const SizedBox(height: 70),
-
-                    // Nút Send
                     CustomButton(
                       text: 'SEND',
-                      onPressed: () {
-                      },
+                      onPressed: () => _setNewPassword(email),
+                      isLoading: _isLoading,
                     ),
-
-
-                    // Hình ảnh dưới cùng
                     Center(
                       child: Image.asset(
                         'assets/images/img_1.png',

@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
         '/user profile': (context) => const UserProfilePage(),
         '/other profile': (context) => const OtherUserProfilePage(),
         '/widget_tree': (context) => const WidgetTree(),
-        // '/search topic': (context) => SearchTopic(),
+        '/search topic': (context) => SearchTopic(),
       },
     );
   }
