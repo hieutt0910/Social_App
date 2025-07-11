@@ -1,13 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
-
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -24,9 +23,8 @@ class _SignInPageState extends State<SignInPage> {
   @override
   void initState() {
     super.initState();
-    // Kiểm tra arguments để tự động điền email
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final Map<String, dynamic>? args = GoRouterState.of(context).extra as Map<String, dynamic>?;
       if (args != null && args['email'] != null) {
         _emailController.text = args['email'];
       }
@@ -45,14 +43,14 @@ class _SignInPageState extends State<SignInPage> {
     try {
       if (!_emailController.text.trim().contains('@')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter a valid email address')),
+          const SnackBar(content: Text('Vui lòng nhập địa chỉ email hợp lệ')),
         );
         return;
       }
 
       if (_passwordController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter your password')),
+          const SnackBar(content: Text('Vui lòng nhập mật khẩu')),
         );
         return;
       }
@@ -61,59 +59,45 @@ class _SignInPageState extends State<SignInPage> {
         _isLoading = true;
       });
 
-      // Lưu email và mật khẩu tạm thời
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('pending_email', _emailController.text.trim());
       await prefs.setString('temp_password', _passwordController.text.trim());
 
-      // Đăng nhập với email và mật khẩu
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Kiểm tra nếu từ set_new_password
-      final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final Map<String, dynamic>? args = GoRouterState.of(context).extra as Map<String, dynamic>?;
       final String fromRoute = args?['fromRoute'] ?? '';
 
       if (fromRoute == 'set_new_password') {
-        Navigator.pushNamed(
-          context,
-          '/set new password',
-          arguments: {'email': _emailController.text.trim()},
-        );
+        context.go('/set-new-password', extra: {'email': _emailController.text.trim()});
       } else {
-        // Gửi liên kết xác thực chứa OTP qua email
         await DynamicLinksHandler.sendSignInLink(_emailController.text.trim());
-
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification link with OTP sent to your email. Please check your inbox.')),
+          const SnackBar(content: Text('Liên kết xác thực với OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến.')),
         );
-
-        Navigator.pushNamed(
-          context,
-          '/verify',
-          arguments: {'email': _emailController.text.trim(), 'fromRoute': 'sign_in'},
-        );
+        context.go('/verify', extra: {'email': _emailController.text.trim(), 'fromRoute': 'sign_in'});
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
         case 'user-not-found':
-          errorMessage = 'No user found for that email.';
+          errorMessage = 'Không tìm thấy người dùng với email này.';
           break;
         case 'wrong-password':
-          errorMessage = 'Incorrect password.';
+          errorMessage = 'Mật khẩu không đúng.';
           break;
         default:
-          errorMessage = 'Error: ${e.message}';
+          errorMessage = 'Lỗi: ${e.message}';
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage)),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Lỗi: $e')),
       );
     } finally {
       setState(() {
@@ -128,56 +112,42 @@ class _SignInPageState extends State<SignInPage> {
       _isLoading = true;
     });
     try {
-      // Khởi tạo GoogleSignIn
       final GoogleSignIn googleSignIn = GoogleSignIn();
-
-      // Đăng nhập Google
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
-        // Người dùng hủy đăng nhập
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Google Sign-In cancelled')),
+          const SnackBar(content: Text('Đăng nhập bằng Google đã bị hủy')),
         );
         return;
       }
 
-      // Lấy thông tin xác thực Google
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Đăng nhập Firebase với thông tin Google
       final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       final User? user = userCredential.user;
 
       if (user != null) {
-        // Lưu email vào SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('pending_email', user.email ?? '');
 
-        // Gửi liên kết xác thực chứa OTP qua email
         await DynamicLinksHandler.sendSignInLink(user.email ?? '');
-
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification link with OTP sent to your email. Please check your inbox.')),
+          const SnackBar(content: Text('Liên kết xác thực với OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến.')),
         );
 
-        // Điều hướng đến VerifyPage
-        Navigator.pushNamed(
-          context,
-          '/verify',
-          arguments: {'email': user.email ?? '', 'fromRoute': 'sign_in'},
-        );
+        context.go('/verify', extra: {'email': user.email ?? '', 'fromRoute': 'sign_in'});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to sign in with Google')),
+          const SnackBar(content: Text('Đăng nhập bằng Google thất bại')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error signing in with Google: $e')),
+        SnackBar(content: Text('Lỗi khi đăng nhập bằng Google: $e')),
       );
     } finally {
       setState(() {
@@ -248,14 +218,14 @@ class _SignInPageState extends State<SignInPage> {
                     const SizedBox(height: 30),
                     InkWell(
                       onTap: () {
-                        Navigator.pushNamed(context, '/forgot password');
+                        context.go('/forgot-password');
                       },
                       child: const Align(
                         alignment: Alignment.center,
                         child: Padding(
                           padding: EdgeInsets.all(8),
                           child: Text(
-                            'FORGOT PASSWORD',
+                            'FORGOT PASSWORD?',
                             style: TextStyle(
                               color: Color(0xFF5252C7),
                               fontWeight: FontWeight.w500,
@@ -319,7 +289,7 @@ class _SignInPageState extends State<SignInPage> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.pushNamed(context, '/sign up');
+                                  context.go('/sign-up');
                                 },
                             ),
                           ],

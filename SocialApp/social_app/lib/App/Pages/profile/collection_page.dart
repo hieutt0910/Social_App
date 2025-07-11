@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../Data/model/collection.dart';
 
 class CollectionDetailPage extends StatelessWidget {
@@ -21,7 +22,7 @@ class CollectionDetailPage extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => context.pop(),
                   ),
                   const SizedBox(width: 8),
                   Expanded(

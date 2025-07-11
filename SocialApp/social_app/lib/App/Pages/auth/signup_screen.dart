@@ -1,12 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
-
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -32,7 +31,6 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _signUp() async {
     if (_isLoading) return;
 
-    // Kiểm tra email hợp lệ
     if (!_emailController.text.trim().contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid email address')),
@@ -40,7 +38,6 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
-    // Kiểm tra mật khẩu và xác nhận mật khẩu
     if (_emailController.text.trim().isEmpty ||
         _passwordController.text.trim().isEmpty ||
         _confirmPasswordController.text.trim().isEmpty) {
@@ -69,32 +66,23 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     try {
-      // Lưu email và mật khẩu tạm thời
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('pending_email', _emailController.text.trim());
       await prefs.setString('temp_password', _passwordController.text.trim());
 
-      // Đăng ký người dùng với Firebase
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Gửi liên kết xác thực chứa OTP qua email
       await DynamicLinksHandler.sendSignInLink(_emailController.text.trim());
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Verification link with OTP sent to your email. Please check your inbox.'),
         ),
       );
 
-      // Điều hướng đến trang xác thực
-      Navigator.pushNamed(
-        context,
-        '/verify',
-        arguments: {'email': _emailController.text.trim(), 'fromRoute': 'sign_up'},
-      );
+      context.go('/verify', extra: {'email': _emailController.text.trim(), 'fromRoute': 'sign_up'});
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
@@ -208,7 +196,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.pushReplacementNamed(context, '/sign in');
+                                  context.go('/sign-in'); // Thay Navigator.pushReplacementNamed
                                 },
                             ),
                           ],

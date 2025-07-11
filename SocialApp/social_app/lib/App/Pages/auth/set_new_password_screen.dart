@@ -1,11 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
 
-
 class SetNewPasswordPage extends StatefulWidget {
-  const SetNewPasswordPage({super.key});
+  final String email;
+
+  const SetNewPasswordPage({super.key, required this.email});
 
   @override
   _SetNewPasswordPageState createState() => _SetNewPasswordPageState();
@@ -25,10 +27,9 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
     super.dispose();
   }
 
-  Future<void> _setNewPassword(String email) async {
+  Future<void> _setNewPassword() async {
     if (_isLoading) return;
 
-    // Kiểm tra các trường nhập
     if (_oldPasswordController.text.trim().isEmpty ||
         _passwordController.text.trim().isEmpty ||
         _confirmPasswordController.text.trim().isEmpty) {
@@ -57,13 +58,11 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
     });
 
     try {
-      // Đăng nhập lại với mật khẩu cũ
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
+        email: widget.email,
         password: _oldPasswordController.text.trim(),
       );
 
-      // Cập nhật mật khẩu mới
       await FirebaseAuth.instance.currentUser!.updatePassword(
         _passwordController.text.trim(),
       );
@@ -72,8 +71,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
         const SnackBar(content: Text('Password changed successfully')),
       );
 
-      // Chuyển hướng về trang đăng nhập
-      Navigator.pushNamed(context, '/sign in');
+      context.go('/sign-in');
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
@@ -85,11 +83,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
           break;
         case 'requires-recent-login':
           errorMessage = 'Please re-sign in and try again.';
-          Navigator.pushNamed(
-            context,
-            '/sign in',
-            arguments: {'email': email, 'fromRoute': 'set_new_password'},
-          );
+          context.go('/sign-in', extra: {'email': widget.email, 'fromRoute': 'set_new_password'});
           break;
         default:
           errorMessage = 'Error: ${e.message}';
@@ -110,9 +104,6 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic>? args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-    final String email = args?['email'] ?? '';
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Column(
@@ -225,7 +216,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                     const SizedBox(height: 70),
                     CustomButton(
                       text: 'SEND',
-                      onPressed: () => _setNewPassword(email),
+                      onPressed: _setNewPassword,
                       isLoading: _isLoading,
                     ),
                     Center(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Text.dart';
 import '../../Widgets/Textfield.dart';
@@ -34,7 +35,7 @@ class EditProfilePage extends StatelessWidget {
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    context.pop();
                   },
                 ),
               ),
@@ -131,7 +132,7 @@ class EditProfilePage extends StatelessWidget {
                     CustomButton(
                       text: 'SAVE CHANGES',
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        context.pop();
                       },
                     ),
                     const SizedBox(height: 40),

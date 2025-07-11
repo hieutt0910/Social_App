@@ -1,14 +1,16 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../Widgets/Button.dart';
 
-
 class VerifyPage extends StatefulWidget {
-  const VerifyPage({super.key});
+  final String email;
+  final String fromRoute;
+
+  const VerifyPage({super.key, required this.email, required this.fromRoute});
 
   @override
   _VerifyPageState createState() => _VerifyPageState();
@@ -59,12 +61,12 @@ class _VerifyPageState extends State<VerifyPage> {
         _refreshTimer?.cancel();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No OTP found. Please check your email.')),
+          const SnackBar(content: Text('Không tìm thấy OTP. Vui lòng kiểm tra email của bạn.')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading OTP: $e')),
+        SnackBar(content: Text('Lỗi khi tải OTP: $e')),
       );
     } finally {
       setState(() {
@@ -73,11 +75,11 @@ class _VerifyPageState extends State<VerifyPage> {
     }
   }
 
-  Future<void> _verifyOTP(String email, String fromRoute) async {
+  Future<void> _verifyOTP() async {
     if (_isLoading) return;
     if (_otpController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the OTP')),
+        const SnackBar(content: Text('Vui lòng nhập OTP')),
       );
       return;
     }
@@ -91,14 +93,13 @@ class _VerifyPageState extends State<VerifyPage> {
 
       print('Verifying OTP - Stored: $storedOtp, Entered: $enteredOtp');
       if (enteredOtp == storedOtp) {
-        // Kiểm tra trạng thái đăng nhập chỉ cho sign_in và sign_up
-        if (fromRoute != 'forgot_password') {
+        if (widget.fromRoute != 'forgot_password') {
           await FirebaseAuth.instance.currentUser?.reload();
           if (FirebaseAuth.instance.currentUser == null) {
             final String? storedPassword = prefs.getString('temp_password');
             if (storedPassword != null && storedPassword.isNotEmpty) {
               await FirebaseAuth.instance.signInWithEmailAndPassword(
-                email: email,
+                email: widget.email,
                 password: storedPassword,
               );
               await FirebaseAuth.instance.currentUser?.reload();
@@ -107,40 +108,35 @@ class _VerifyPageState extends State<VerifyPage> {
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification successful')),
+          const SnackBar(content: Text('Xác thực thành công')),
         );
 
-        // Điều hướng dựa trên nguồn
-        if (fromRoute == 'forgot_password') {
-          Navigator.pushNamed(
-            context,
-            '/set new password',
-            arguments: {'email': email},
-          );
+
+        if (widget.fromRoute == 'forgot_password') {
+          context.go('/set-new-password', extra: {'email': widget.email});
         } else {
           if (FirebaseAuth.instance.currentUser != null) {
-            Navigator.pushNamed(context, '/category');
+            context.go('/category');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User not authenticated, please try again')),
+              const SnackBar(content: Text('Người dùng chưa được xác thực, vui lòng thử lại')),
             );
-            Navigator.pushNamed(context, '/sign in');
+            context.go('/sign-in');
             return;
           }
         }
 
-        // Xóa OTP và email sau khi xác thực thành công
         await prefs.remove('pending_otp');
         await prefs.remove('pending_email');
         await prefs.remove('temp_password');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid OTP')),
+          const SnackBar(content: Text('OTP không hợp lệ')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error verifying OTP: $e')),
+        SnackBar(content: Text('Lỗi khi xác thực OTP: $e')),
       );
     } finally {
       setState(() {
@@ -149,15 +145,15 @@ class _VerifyPageState extends State<VerifyPage> {
     }
   }
 
-  Future<void> _resendLink(String email) async {
+  Future<void> _resendLink() async {
     if (_isLoading) return;
     setState(() {
       _isLoading = true;
     });
     try {
-      await DynamicLinksHandler.sendSignInLink(email);
+      await DynamicLinksHandler.sendSignInLink(widget.email);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verification link with OTP resent to your email.')),
+        const SnackBar(content: Text('Liên kết xác thực với OTP đã được gửi lại đến email của bạn.')),
       );
       _refreshTimer?.cancel();
       _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
@@ -167,7 +163,7 @@ class _VerifyPageState extends State<VerifyPage> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error resending link: $e')),
+        SnackBar(content: Text('Lỗi khi gửi lại liên kết: $e')),
       );
     } finally {
       setState(() {
@@ -178,18 +174,6 @@ class _VerifyPageState extends State<VerifyPage> {
 
   @override
   Widget build(BuildContext context) {
-    String email = '';
-    String fromRoute = '';
-    final dynamic args = ModalRoute.of(context)!.settings.arguments;
-
-    if (args is String) {
-      email = args;
-      fromRoute = 'sign_in';
-    } else if (args is Map<String, dynamic>) {
-      email = args['email'] ?? '';
-      fromRoute = args['fromRoute'] ?? 'sign_in';
-    }
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
@@ -302,11 +286,9 @@ class _VerifyPageState extends State<VerifyPage> {
                       ),
                       const SizedBox(height: 30),
                       GestureDetector(
-                        onTap: () async {
-                          await _resendLink(email);
-                        },
+                        onTap: _resendLink,
                         child: const Text(
-                          "DON'T RECEIVE THE CODE",
+                          "DON'T RECEIVE THE CODE?",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
@@ -318,7 +300,7 @@ class _VerifyPageState extends State<VerifyPage> {
                       const SizedBox(height: 30),
                       CustomButton(
                         text: 'VERIFY',
-                        onPressed: () => _verifyOTP(email, fromRoute),
+                        onPressed: _verifyOTP,
                         isLoading: _isLoading,
                       ),
                       Image.asset(

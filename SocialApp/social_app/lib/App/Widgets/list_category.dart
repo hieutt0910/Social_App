@@ -30,7 +30,7 @@ class ListCategory extends StatelessWidget {
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
-              context.go('/searchTopic');
+              context.push('/search-topic');
             },
             child: SizedBox(
               width: cardWidth,

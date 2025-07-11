@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -37,7 +38,7 @@ class AccountPage extends StatelessWidget {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            Navigator.pushNamed(context, '/user profile');
+                            context.push('/user-profile');
                           },
                           child: const CircleAvatar(
                             radius: 32,
@@ -72,7 +73,7 @@ class AccountPage extends StatelessWidget {
                           padding: const EdgeInsets.only(bottom: 20),
                           child: GestureDetector(
                             onTap: () {
-                              Navigator.pushNamed(context, '/edit profile');
+                              context.push('/edit-profile');
                             },
                             child: Image.asset(
                               'assets/images/img_11.png',
@@ -94,7 +95,7 @@ class AccountPage extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.only(left: 0),
                     children: [
-                      _buildItem(context: context,  label: "Email", routeName: '/other profile'),
+                      _buildItem(context: context,  label: "Email", routeName: '/other-profile'),
                       _buildItem(context: context,  label: "Instagram", routeName: '/instagram'),
                       _buildItem(context: context,  label: "Twitter", routeName: '/twitter'),
                       _buildItem(context: context,  label: "Website", routeName: '/website'),
@@ -117,7 +118,7 @@ class AccountPage extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () async {
                         await FirebaseAuth.instance.signOut();
-                        Navigator.pushReplacementNamed(context, '/sign in');
+                        context.go('/sign-in');
                       },
                       icon: const Icon(Icons.logout, color: Colors.black, size: 24),
                       label: const Text(
@@ -175,7 +176,7 @@ class AccountPage extends StatelessWidget {
               color: Colors.white,
             ),
             onTap: () {
-              Navigator.pushNamed(context, routeName);
+              context.push(routeName);
             },
           ),
         ),

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DynamicLinksHandler {
@@ -11,12 +12,12 @@ class DynamicLinksHandler {
 
   static Stream<void> get onLinkHandled => _linkHandledStream.stream;
 
-  static Future<void> initDynamicLinks() async {
+  static Future<void> initDynamicLinks(BuildContext context) async {
     FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData? dynamicLink) async {
       final Uri? deepLink = dynamicLink?.link;
       print('Received deep link: $deepLink');
       if (deepLink != null) {
-        await _handleDynamicLink(deepLink);
+        await _handleDynamicLink(context, deepLink);
         _linkHandledStream.add(null);
       }
     });
@@ -26,35 +27,38 @@ class DynamicLinksHandler {
       final Uri? deepLink = initialLink.link;
       print('Received initial link: $deepLink');
       if (deepLink != null) {
-        await _handleDynamicLink(deepLink);
+        await _handleDynamicLink(context, deepLink);
         _linkHandledStream.add(null);
       }
     }
   }
 
-  static Future<void> _handleDynamicLink(Uri deepLink) async {
+  static Future<void> _handleDynamicLink(BuildContext context, Uri deepLink) async {
     print('Handling deep link: $deepLink');
     final prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString('pending_email') ?? '';
-    print('Pending email: $email');
+    final email = deepLink.queryParameters['email'] ?? prefs.getString('pending_email') ?? '';
+    final otp = deepLink.queryParameters['otp'];
 
-    String? otp = deepLink.queryParameters['otp'];
+    print('Email from link or prefs: $email');
     print('OTP from link: $otp');
+
     if (otp != null) {
       await prefs.setString('pending_otp', otp);
       print('OTP saved to SharedPreferences: $otp');
     }
 
     if (email.isNotEmpty) {
-      navigatorKey.currentState?.pushReplacementNamed('/verify', arguments: email);
+      context.go('/verify', extra: {'email': email, 'fromRoute': 'sign_in'});
+    } else {
+      print('No valid email found in link or SharedPreferences');
     }
   }
 
-  static Future<void> sendSignInLink(String email, {Map<String, String>? customParams}) async {
+  static Future<void> sendSignInLink(String email, {Map<String, String>? customParams, String? fromRoute}) async {
     try {
       String otp = (100000 + Random().nextInt(900000)).toString();
-      String url = 'https://socialapp678.page.link?otp=$otp&email=$email';
-      print('Gửi link với URL: $url');
+      String url = 'https://socialapp678.page.link/verify?otp=$otp&email=$email&fromRoute=$fromRoute';
+      print('Sending link with URL: $url');
 
       var actionCodeSettings = ActionCodeSettings(
         url: url,
@@ -68,16 +72,20 @@ class DynamicLinksHandler {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('pending_email', email);
       await prefs.setString('pending_otp', otp);
-      print('Đã lưu email đang chờ: $email');
-      print('Đã lưu OTP đang chờ: $otp');
+      if (fromRoute != null) {
+        await prefs.setString('from_route', fromRoute);
+      }
+      print('Saved pending email: $email');
+      print('Saved pending OTP: $otp');
+      print('Saved fromRoute: $fromRoute');
 
       await FirebaseAuth.instance.sendSignInLinkToEmail(
         email: email,
         actionCodeSettings: actionCodeSettings,
       );
-      print('Đã gửi link xác thực tới: $email');
+      print('Sent verification link to: $email');
     } catch (e) {
-      print('Lỗi khi gửi link: $e');
+      print('Error sending link: $e');
     }
   }
 

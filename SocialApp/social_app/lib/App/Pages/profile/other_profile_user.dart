@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../Data/model/collection.dart';
 import 'collection_page.dart';
@@ -82,7 +83,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    context.pop();
                   },
                 ),
               ),
@@ -319,12 +320,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
         final collection = collections[index];
         return GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CollectionDetailPage(collection: collection),
-                ),
-              );
+              context.push('/collection-detail', extra: collection);
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,12 +334,12 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                         collection.coverImage,
                         fit: BoxFit.cover,
                         width: double.infinity,
-                        height: 180,
+                        height: 166,
                       ),
                     ),
                     Container(
                       width: double.infinity,
-                      height: 180,
+                      height: 166,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                       ),
