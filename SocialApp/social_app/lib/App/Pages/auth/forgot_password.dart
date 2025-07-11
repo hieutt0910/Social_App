@@ -1,11 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
-
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -27,7 +25,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Future<void> _sendResetLink() async {
     if (_isLoading) return;
 
-    // Kiểm tra email hợp lệ
     if (!_emailController.text.trim().contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid email address')),
@@ -47,25 +44,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
 
     try {
-      // Lưu email vào SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('pending_email', _emailController.text.trim());
 
-      // Gửi liên kết xác thực chứa OTP qua email
-      await DynamicLinksHandler.sendSignInLink(_emailController.text.trim());
-
+      await DynamicLinksHandler.sendSignInLink(_emailController.text.trim(),fromRoute: 'forgot_password');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Verification link with OTP sent to your email. Please check your inbox.'),
         ),
       );
 
-      // Điều hướng đến trang xác thực
-      Navigator.pushNamed(
-        context,
-        '/verify',
-        arguments: {'email': _emailController.text.trim(), 'fromRoute': 'forgot_password'},
-      );
+      context.go('/verify', extra: {'email': _emailController.text.trim(), 'fromRoute': 'forgot_password'});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error sending reset link: $e')),

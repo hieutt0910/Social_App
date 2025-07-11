@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../Widgets/Button.dart';
 
 class ChooseRolePage extends StatefulWidget {
@@ -24,7 +25,6 @@ class _ChooseRolePageState extends State<ChooseRolePage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Top image with curve
           ClipPath(
             child: Image.asset(
               'assets/images/img_2.png',
@@ -33,8 +33,6 @@ class _ChooseRolePageState extends State<ChooseRolePage> {
               fit: BoxFit.cover,
             ),
           ),
-
-          // Expanded content with padding and scrollable
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -44,15 +42,13 @@ class _ChooseRolePageState extends State<ChooseRolePage> {
                   const Text(
                     "Who are you?",
                     style: TextStyle(
-                      fontSize: 20  ,
+                      fontSize: 20,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF242424),
                       letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Grid images
                   GridView.builder(
                     shrinkWrap: true,
                     itemCount: roleImages.length,
@@ -93,7 +89,6 @@ class _ChooseRolePageState extends State<ChooseRolePage> {
                       );
                     },
                   ),
-
                   const SizedBox(height: 20),
                   ShaderMask(
                     shaderCallback: (bounds) {
@@ -107,24 +102,20 @@ class _ChooseRolePageState extends State<ChooseRolePage> {
                       "SHARE - INSPIRE - CONNECT",
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white, // Bắt buộc dùng trắng để gradient hiển thị đúng
+                        color: Colors.white,
                         letterSpacing: 2,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
                   ),
-
                   const SizedBox(height: 40),
-
-                  // Reusable Button
                   CustomButton(
                     text: 'EXPLORE NOW',
                     onPressed: () {
-                      Navigator.pushNamed(context, '/widget_tree');
+                      context.go('/widget-tree');
                     },
                   ),
-
                   const SizedBox(height: 32),
                 ],
               ),
