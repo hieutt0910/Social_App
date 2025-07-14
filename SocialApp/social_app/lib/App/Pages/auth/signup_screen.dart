@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../../Data/model/user.dart';
-import '../../Widgets/Button.dart';
-import '../../Widgets/Textfield.dart';
+import '../../Widgets/button.dart';
+import '../../Widgets/textfield.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

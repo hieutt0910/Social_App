@@ -1,11 +1,15 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../Data/model/user.dart';
-import '../../Widgets/Button.dart';
-import '../../Widgets/Text.dart';
-import '../../Widgets/Textfield.dart';
+import '../../Widgets/button.dart';
+import '../../Widgets/text.dart';
+import '../../Widgets/textfield.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -24,6 +28,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _termsController = TextEditingController();
   bool _isLoading = false;
   AppUser? _user;
+  File? _selectedImage;
+  String? _base64Image;
 
   @override
   void initState() {
@@ -41,8 +47,30 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _nameController.text = appUser.name;
           _lastNameController.text = appUser.lastName;
           _emailController.text = appUser.email;
+          _instagramController.text = appUser.instagram ?? '';
+          _twitterController.text = appUser.twitter ?? '';
+          _websiteController.text = appUser.website ?? '';
+          _termsController.text = appUser.terms ?? '';
         });
       }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      final base64String = base64Encode(bytes);
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+        _base64Image = base64String;
+      });
     }
   }
 
@@ -55,6 +83,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
       await _user!.updateInFirestore(
           name: _nameController.text.trim(),
           lastName: _lastNameController.text.trim(),
+          imageUrl: _base64Image,
+          instagram: _instagramController.text.trim(),
+          twitter: _twitterController.text.trim(),
+          website: _websiteController.text.trim(),
+          terms: _termsController.text.trim(),
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully')),
@@ -134,21 +167,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: _user?.imageUrl != null
-                            ? NetworkImage(_user!.imageUrl!)
-                            : const AssetImage('assets/images/img_10.png') as ImageProvider,
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: _selectedImage != null
+                              ? FileImage(_selectedImage!)
+                              : _user?.imageUrl != null
+                              ? MemoryImage(base64Decode(_user!.imageUrl!))
+                              : const AssetImage('assets/images/img_10.png') as ImageProvider,
+                        ),
                       ),
                       Positioned(
                         bottom: 0,
                         right: -4,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          child: Image.asset(
-                            'assets/images/img_14.png',
-                            width: 24,
-                            height: 24,
+                        child: GestureDetector(
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            child: Image.asset(
+                              'assets/images/img_14.png',
+                              width: 24,
+                              height: 24,
+                            ),
                           ),
                         ),
                       ),

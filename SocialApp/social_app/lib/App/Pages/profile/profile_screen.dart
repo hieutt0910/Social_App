@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +68,7 @@ class _AccountPageState extends State<AccountPage> {
                           child: CircleAvatar(
                             radius: 32,
                             backgroundImage: _user?.imageUrl != null
-                                ? NetworkImage(_user!.imageUrl!)
+                                ? MemoryImage(base64Decode(_user!.imageUrl!))
                                 : const AssetImage('assets/images/avatar.jpg') as ImageProvider,
                           ),
                         ),

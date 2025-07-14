@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../Widgets/Button.dart';
-import '../../Widgets/Textfield.dart';
+import '../../Widgets/button.dart';
+import '../../Widgets/textfield.dart';
 
 class SetNewPasswordPage extends StatefulWidget {
   final String email;
