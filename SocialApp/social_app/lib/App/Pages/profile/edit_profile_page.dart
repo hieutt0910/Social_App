@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../Data/model/user.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Text.dart';
-import '../../Widgets/Textfield.dart';
+import '../../widgets/Textfield.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -53,17 +53,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
     try {
       await _user!.updateInFirestore(
-          name: _nameController.text.trim(),
-          lastName: _lastNameController.text.trim(),
+        name: _nameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully')),
       );
       context.pop();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating profile: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
     } finally {
       setState(() {
         _isLoading = false;
@@ -136,9 +136,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: _user?.imageUrl != null
-                            ? NetworkImage(_user!.imageUrl!)
-                            : const AssetImage('assets/images/img_10.png') as ImageProvider,
+                        backgroundImage:
+                            _user?.imageUrl != null
+                                ? NetworkImage(_user!.imageUrl!)
+                                : const AssetImage('assets/images/img_10.png')
+                                    as ImageProvider,
                       ),
                       Positioned(
                         bottom: 0,
@@ -182,8 +184,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     const SizedBox(height: 18),
                     FormLabel(text: 'Last Name'),
                     CustomInputField(
-                        hintText: "Last Name",
-                        controller: _lastNameController,
+                      hintText: "Last Name",
+                      controller: _lastNameController,
                     ),
                     const SizedBox(height: 18),
                     FormLabel(text: 'Email'),
