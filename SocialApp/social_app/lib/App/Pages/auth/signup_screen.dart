@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../Data/Repositories/dynamic_link_handler.dart';
+import '../../../Data/model/user.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
 
@@ -70,10 +71,19 @@ class _SignUpPageState extends State<SignUpPage> {
       await prefs.setString('pending_email', _emailController.text.trim());
       await prefs.setString('temp_password', _passwordController.text.trim());
 
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      // Lưu thông tin người dùng vào Firestore
+      if (userCredential.user != null) {
+        final appUser = AppUser(
+          uid: userCredential.user!.uid,
+          email: _emailController.text.trim(),
+        );
+        await appUser.saveToFirestore();
+      }
 
       await DynamicLinksHandler.sendSignInLink(_emailController.text.trim());
       ScaffoldMessenger.of(context).showSnackBar(

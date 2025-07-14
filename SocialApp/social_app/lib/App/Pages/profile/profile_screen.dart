@@ -1,9 +1,37 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class AccountPage extends StatelessWidget {
+import '../../../Data/model/user.dart';
+
+class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
+
+  @override
+  _AccountPageState createState() => _AccountPageState();
+}
+
+class _AccountPageState extends State<AccountPage> {
+  AppUser? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null) {
+      final appUser = await AppUser.getFromFirestore(firebaseUser.uid);
+      if (appUser != null) {
+        setState(() {
+          _user = appUser;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,21 +39,16 @@ class AccountPage extends StatelessWidget {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Background image
           Positioned.fill(
             child: Image.asset(
               'assets/images/img_9.png',
               fit: BoxFit.cover,
             ),
           ),
-
-          // Main content
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 40),
-
-                // Profile info
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
@@ -40,28 +63,30 @@ class AccountPage extends StatelessWidget {
                           onTap: () {
                             context.push('/user-profile');
                           },
-                          child: const CircleAvatar(
+                          child: CircleAvatar(
                             radius: 32,
-                            backgroundImage: AssetImage('assets/images/avatar.jpg'),
+                            backgroundImage: _user?.imageUrl != null
+                                ? NetworkImage(_user!.imageUrl!)
+                                : const AssetImage('assets/images/avatar.jpg') as ImageProvider,
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Bruno Pham",
-                                style: TextStyle(
+                                '${_user?.name ?? 'Unknown'} ${_user?.lastName ?? ''}'.trim(),
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
-                                "thanhphamdhbk@gmail.com",
-                                style: TextStyle(
+                                _user?.email ?? 'No email',
+                                style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 12,
                                 ),
@@ -87,30 +112,23 @@ class AccountPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // List items
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.only(left: 0),
                     children: [
-                      _buildItem(context: context,  label: "Email", routeName: '/other-profile'),
-                      _buildItem(context: context,  label: "Instagram", routeName: '/instagram'),
-                      _buildItem(context: context,  label: "Twitter", routeName: '/twitter'),
-                      _buildItem(context: context,  label: "Website", routeName: '/website'),
-                      _buildItem(context: context,  label: "Paypal", routeName: '/paypal'),
-                      _buildItem(context: context,  label: "Change password", routeName: '/change-password'),
-                      _buildItem(context: context,  label: "About i.click", routeName: '/about'),
-                      _buildItem(context: context,  label: "Terms & privacy", routeName: '/terms'),
-
+                      _buildItem(context: context, label: "Email", routeName: '/other-profile'),
+                      _buildItem(context: context, label: "Instagram", routeName: '/instagram'),
+                      _buildItem(context: context, label: "Twitter", routeName: '/twitter'),
+                      _buildItem(context: context, label: "Website", routeName: '/website'),
+                      _buildItem(context: context, label: "Paypal", routeName: '/paypal'),
+                      _buildItem(context: context, label: "Change password", routeName: '/change-password'),
+                      _buildItem(context: context, label: "About i.click", routeName: '/about'),
+                      _buildItem(context: context, label: "Terms & privacy", routeName: '/terms'),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Logout button
                 Padding(
                   padding: const EdgeInsets.only(left: 36, bottom: 80),
                   child: Align(
@@ -183,6 +201,4 @@ class AccountPage extends StatelessWidget {
       ),
     );
   }
-
-
 }
