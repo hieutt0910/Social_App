@@ -1,5 +1,6 @@
 // lib/App/Widgets/gradient_text.dart
 import 'package:flutter/material.dart';
+import 'package:social_app/style/app_color.dart';
 
 class GradientText extends StatelessWidget {
   final String text;
@@ -12,7 +13,7 @@ class GradientText extends StatelessWidget {
     required this.text,
     this.style,
     this.gradient = const LinearGradient(
-      colors: [Color(0xFF5151C6), Color(0xFF888BF4)],
+      colors: [AppColors.startGradient, AppColors.endGradient],
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
     ),

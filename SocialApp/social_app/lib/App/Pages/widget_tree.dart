@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:social_app/App/pages/category_page.dart';
 import 'package:social_app/App/pages/home_page.dart';
 import 'package:social_app/App/pages/profile/profile_screen.dart';
@@ -52,14 +53,7 @@ class _WidgetTreeState extends State<WidgetTree> {
           assetPathUnSelected: "assets/icons/add.svg",
           isSelected: true,
           onTap: () {
-            showDialog(
-              context: context,
-              builder:
-                  (_) => const AlertDialog(
-                    title: Text("Nút giữa được nhấn"),
-                    content: Text("Bạn có thể làm gì đó ở đây."),
-                  ),
-            );
+            context.push('/create-post');
           },
         ),
       ),
