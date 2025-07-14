@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../Data/Repositories/dynamic_link_handler.dart';
+import '../../../Data/model/user.dart';
 import '../../Widgets/Button.dart';
 import '../../Widgets/Textfield.dart';
 
@@ -63,10 +64,19 @@ class _SignInPageState extends State<SignInPage> {
       await prefs.setString('pending_email', _emailController.text.trim());
       await prefs.setString('temp_password', _passwordController.text.trim());
 
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      // Lưu thông tin người dùng vào Firestore
+      if (userCredential.user != null) {
+        final appUser = AppUser(
+          uid: userCredential.user!.uid,
+          email: _emailController.text.trim(),
+        );
+        await appUser.saveToFirestore();
+      }
 
       final Map<String, dynamic>? args = GoRouterState.of(context).extra as Map<String, dynamic>?;
       final String fromRoute = args?['fromRoute'] ?? '';
@@ -131,6 +141,15 @@ class _SignInPageState extends State<SignInPage> {
       final User? user = userCredential.user;
 
       if (user != null) {
+        // Lưu thông tin người dùng vào Firestore
+        final appUser = AppUser(
+          uid: user.uid,
+          email: user.email ?? '',
+          name: user.displayName ?? 'Unknown',
+          imageUrl: user.photoURL,
+        );
+        await appUser.saveToFirestore();
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('pending_email', user.email ?? '');
 
