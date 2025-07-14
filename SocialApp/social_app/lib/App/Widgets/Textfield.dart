@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 class CustomInputField extends StatefulWidget {
   final String hintText;
   final bool obscureText;
-  final TextEditingController? controller; // Thêm tham số controller
+  final TextEditingController? controller;
+  final bool enabled;
 
   const CustomInputField({
     super.key,
     required this.hintText,
     this.obscureText = false,
-    this.controller, // Thêm vào constructor
+    this.controller,
+    this.enabled = true, // Mặc định nên là true (có thể chỉnh sửa)
   });
 
   @override
@@ -34,8 +36,12 @@ class _CustomInputFieldState extends State<CustomInputField> {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: widget.controller, // Gán controller cho TextField
+      controller: widget.controller,
       obscureText: _obscure,
+      enabled: widget.enabled,
+      style: TextStyle(
+        color: widget.enabled ? Colors.black : Colors.grey,
+      ),
       decoration: InputDecoration(
         hintText: widget.hintText,
         filled: true,
@@ -50,7 +56,7 @@ class _CustomInputFieldState extends State<CustomInputField> {
           icon: Icon(
             _obscure ? Icons.visibility_off : Icons.visibility,
           ),
-          onPressed: _toggleObscure,
+          onPressed: widget.enabled ? _toggleObscure : null, // Vô hiệu hoá nút khi disabled
         )
             : null,
       ),

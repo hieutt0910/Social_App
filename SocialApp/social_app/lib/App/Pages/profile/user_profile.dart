@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../Data/model/collection.dart';
-import 'collection_page.dart';
-
+import '../../../Data/model/user.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -15,6 +15,7 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   int selectedTab = 0;
+  AppUser? _user;
 
   final List<String> tabs = ["shots", "Collections"];
 
@@ -58,6 +59,23 @@ class _UserProfilePageState extends State<UserProfilePage> {
     ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null) {
+      final appUser = await AppUser.getFromFirestore(firebaseUser.uid);
+      if (appUser != null) {
+        setState(() {
+          _user = appUser;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +110,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 top: MediaQuery.of(context).padding.top + 35,
                 left: 0,
                 right: 0,
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '@brunopham',
-                    style: TextStyle(
+                    '@${_user?.email.split('@')[0] ?? 'user'}',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -108,14 +126,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 right: 16,
                 child: const Icon(Icons.settings, color: Colors.white),
               ),
-              const Positioned(
+              Positioned(
                 bottom: -55,
                 left: 0,
                 right: 0,
                 child: Center(
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/images/avatar.jpg'),
+                    backgroundImage: _user?.imageUrl != null
+                        ? NetworkImage(_user!.imageUrl!)
+                        : const AssetImage('assets/images/avatar.jpg') as ImageProvider,
                   ),
                 ),
               ),
@@ -129,9 +149,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  const Text(
-                    "Bruno Pham",
-                    style: TextStyle(
+                  Text(
+                    '${_user?.name ?? 'Unknown'} ${_user?.lastName ?? ''}'.trim(),
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 22,
                     ),
@@ -139,7 +159,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   const SizedBox(height: 4),
                   const Text(
                     "Da Nang, Vietnam",
-                    style: TextStyle(color: Colors.grey,fontSize: 16),
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
 
                   const SizedBox(height: 20),
@@ -155,13 +175,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Text("220", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16)),
+                        Text("220", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         SizedBox(width: 4),
-                        Text("Followers", style: TextStyle(color: Colors.grey,fontSize: 16)),
+                        Text("Followers", style: TextStyle(color: Colors.grey, fontSize: 16)),
                         SizedBox(width: 48),
-                        Text("150", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16)),
+                        Text("150", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         SizedBox(width: 4),
-                        Text("Following", style: TextStyle(color: Colors.grey,fontSize: 16)),
+                        Text("Following", style: TextStyle(color: Colors.grey, fontSize: 16)),
                       ],
                     ),
                   ),
@@ -286,6 +306,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       },
     );
   }
+
   Widget _buildCollections() {
     if (collections.isEmpty) {
       return Center(
@@ -306,50 +327,46 @@ class _UserProfilePageState extends State<UserProfilePage> {
       itemBuilder: (context, index) {
         final collection = collections[index];
         return GestureDetector(
-            onTap: () {
-              context.push('/collection-detail', extra: collection);
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        collection.coverImage,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 166,
-                      ),
-                    ),
-                    Container(
+          onTap: () {
+            context.push('/collection-detail', extra: collection);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      collection.coverImage,
+                      fit: BoxFit.cover,
                       width: double.infinity,
                       height: 166,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                     ),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  '${collection.images.length} shots',
-                  style: const TextStyle(
-                    color: Color(0xFF8E8E93),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
+                  Container(
+                    width: double.infinity,
+                    height: 166,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${collection.images.length} shots',
+                style: const TextStyle(
+                  color: Color(0xFF8E8E93),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
-            )
-
+              ),
+            ],
+          ),
         );
       },
     );
   }
-
 }
