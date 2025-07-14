@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:social_app/App/Widgets/gradient_text.dart';
-import 'package:social_app/App/Widgets/post_widget.dart';
 import 'package:social_app/App/Widgets/search_bar_widget.dart';
+import 'package:social_app/app/widgets/feed_tab.dart';
+import 'package:social_app/app/widgets/gradient_tab.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.only(top: 50),
+        padding: const EdgeInsets.only(top: 40),
         child: Column(
           children: [
             Padding(
@@ -91,60 +91,25 @@ class _HomePageState extends State<HomePage>
                   unselectedLabelColor: const Color(0xFFBDBDBD),
                   dividerColor: Colors.transparent,
                   tabs:
-                  tabTitles.map((title) {
-                    return Tab(
-                      child: _GradientTab(
-                        text: title,
-                        tabController: _tabController,
-                        index: tabTitles.indexOf(title),
-                      ),
-                    );
-                  }).toList(),
+                      tabTitles.map((title) {
+                        return Tab(
+                          child: GradientTab(
+                            text: title,
+                            tabController: _tabController,
+                            index: tabTitles.indexOf(title),
+                          ),
+                        );
+                      }).toList(),
                 ),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20.0, 20, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    Center(
-                      child: ListView.separated(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        itemCount: 10,
-                        itemBuilder: (context, index) {
-                          return PostWidget();
-                        },
-                        separatorBuilder: (context, index) {
-                          return SizedBox(height: 16);
-                        },
-                      ),
-                    ),
-                    Center(
-                      child: ListView.separated(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        itemCount: 10,
-                        itemBuilder: (context, index) {
-                          return PostWidget();
-                        },
-                        separatorBuilder: (context, index) {
-                          return SizedBox(height: 16);
-                        },
-                      ),
-                    ),
-                    Center(
-                      child: ListView.separated(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        itemCount: 10,
-                        itemBuilder: (context, index) {
-                          return PostWidget();
-                        },
-                        separatorBuilder: (context, index) {
-                          return SizedBox(height: 16);
-                        },
-                      ),
-                    ),
+                    FeedTab(), // Popular
                   ],
                 ),
               ),
@@ -152,60 +117,6 @@ class _HomePageState extends State<HomePage>
           ],
         ),
       ),
-    );
-  }
-}
-
-class _GradientTab extends StatefulWidget {
-  final String text;
-  final TabController tabController;
-  final int index;
-
-  const _GradientTab({
-    required this.text,
-    required this.tabController,
-    required this.index,
-  });
-
-  @override
-  State<_GradientTab> createState() => _GradientTabState();
-}
-
-class _GradientTabState extends State<_GradientTab> {
-  @override
-  void initState() {
-    super.initState();
-    widget.tabController.addListener(_handleTabSelection);
-  }
-
-  @override
-  void dispose() {
-    widget.tabController.removeListener(_handleTabSelection);
-    super.dispose();
-  }
-
-  void _handleTabSelection() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isSelected = widget.tabController.index == widget.index;
-
-    return Center(
-      child:
-          isSelected
-              ? GradientText(text: widget.text, fontSize: 16)
-              : Text(
-                widget.text,
-                style: const TextStyle(
-                  color: Color(0xFFBDBDBD),
-                  fontWeight: FontWeight.normal,
-                  fontSize: 16,
-                ),
-              ),
     );
   }
 }

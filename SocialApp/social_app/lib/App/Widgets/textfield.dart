@@ -39,26 +39,31 @@ class _CustomInputFieldState extends State<CustomInputField> {
       controller: widget.controller,
       obscureText: _obscure,
       enabled: widget.enabled,
-      style: TextStyle(
-        color: widget.enabled ? Colors.black : Colors.grey,
-      ),
+      style: TextStyle(color: widget.enabled ? Colors.black : Colors.grey),
       decoration: InputDecoration(
         hintText: widget.hintText,
         filled: true,
         fillColor: const Color(0xFFF3F5F7),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,
         ),
-        suffixIcon: widget.obscureText
-            ? IconButton(
-          icon: Icon(
-            _obscure ? Icons.visibility_off : Icons.visibility,
-          ),
-          onPressed: widget.enabled ? _toggleObscure : null, // Vô hiệu hoá nút khi disabled
-        )
-            : null,
+        suffixIcon:
+            widget.obscureText
+                ? IconButton(
+                  icon: Icon(
+                    _obscure ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed:
+                      widget.enabled
+                          ? _toggleObscure
+                          : null, // Vô hiệu hoá nút khi disabled
+                )
+                : null,
       ),
     );
   }

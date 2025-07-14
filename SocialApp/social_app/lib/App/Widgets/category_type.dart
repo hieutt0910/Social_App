@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_app/app/widgets/gradient_text.dart'; // nếu bạn tự tạo GradientText
 
@@ -20,7 +21,10 @@ class CategoryType extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          GradientText(text: 'View more', fontSize: 14),
+          GestureDetector(
+            onTap: () => context.push('/search-topic'),
+            child: GradientText(text: 'View more', fontSize: 14),
+          ),
         ],
       ),
     );

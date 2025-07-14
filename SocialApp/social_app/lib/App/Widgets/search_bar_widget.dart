@@ -5,23 +5,26 @@ class SearchBarWidget extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final ValueChanged<String>? onChanged;
+  final FocusNode? focusNode; // THÊM DÒNG NÀY
 
   const SearchBarWidget({
     super.key,
     required this.controller,
     this.hintText = 'Search',
     this.onChanged,
+    this.focusNode, // THÊM DÒNG NÀY
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Color(0xFFF3F5F7),
+        color: const Color(0xFFF3F5F7),
         borderRadius: BorderRadius.circular(30),
       ),
       child: TextField(
         controller: controller,
+        focusNode: focusNode, // TRUYỀN VÀO ĐÂY
         onChanged: onChanged,
         style: const TextStyle(fontSize: 16),
         decoration: InputDecoration(
@@ -40,7 +43,8 @@ class SearchBarWidget extends StatelessWidget {
               'assets/icons/search.svg',
               width: 20,
               height: 20,
-              colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+              colorFilter:
+                  const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
             ),
           ),
         ),
