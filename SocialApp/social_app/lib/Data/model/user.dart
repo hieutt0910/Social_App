@@ -6,6 +6,10 @@ class AppUser {
   String name;
   String lastName;
   String? imageUrl;
+  String? instagram;
+  String? twitter;
+  String? website;
+  String? terms;
 
   AppUser({
     required this.uid,
@@ -13,6 +17,10 @@ class AppUser {
     this.name = 'Unknown',
     this.lastName = '',
     this.imageUrl,
+    this.instagram,
+    this.twitter,
+    this.website,
+    this.terms,
   });
 
   // Chuyển đổi từ Map (Firestore) sang đối tượng AppUser
@@ -23,6 +31,10 @@ class AppUser {
       name: data['name'] ?? 'Unknown',
       lastName: data['lastName'] ?? '',
       imageUrl: data['imageUrl'],
+      instagram: data['instagram'],
+      twitter: data['twitter'],
+      website: data['website'],
+      terms: data['terms'],
     );
   }
 
@@ -33,6 +45,10 @@ class AppUser {
       'name': name,
       'lastName': lastName,
       'imageUrl': imageUrl,
+      'instagram': instagram,
+      'twitter': twitter,
+      'website': website,
+      'terms': terms,
     };
   }
 
@@ -66,6 +82,10 @@ class AppUser {
     String? name,
     String? lastName,
     String? imageUrl,
+    String? instagram,
+    String? twitter,
+    String? website,
+    String? terms,
   }) async {
     final updates = <String, dynamic>{};
     if (name != null) {
@@ -79,6 +99,22 @@ class AppUser {
     if (imageUrl != null) {
       this.imageUrl = imageUrl;
       updates['imageUrl'] = imageUrl;
+    }
+    if (instagram != null) {
+      this.instagram = instagram;
+      updates['instagram'] = instagram;
+    }
+    if (twitter != null) {
+      this.twitter = twitter;
+      updates['twitter'] = twitter;
+    }
+    if (website != null) {
+      this.website = website;
+      updates['website'] = website;
+    }
+    if (terms != null) {
+      this.terms = terms;
+      updates['terms'] = terms;
     }
     if (updates.isNotEmpty) {
       await FirebaseFirestore.instance

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../Widgets/Button.dart';
+import '../../Widgets/button.dart';
 
 class ChooseRolePage extends StatefulWidget {
   const ChooseRolePage({super.key});

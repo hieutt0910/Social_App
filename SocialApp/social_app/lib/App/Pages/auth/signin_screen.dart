@@ -6,8 +6,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../Data/Repositories/dynamic_link_handler.dart';
 import '../../../Data/model/user.dart';
-import '../../Widgets/Button.dart';
-import '../../Widgets/Textfield.dart';
+import '../../Widgets/button.dart';
+import '../../Widgets/textfield.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
