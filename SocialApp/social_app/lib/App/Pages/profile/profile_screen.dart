@@ -1,10 +1,8 @@
 import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import '../../../Data/model/user.dart';
 
 class AccountPage extends StatefulWidget {
@@ -153,7 +151,7 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 16),
                 Padding(
-                  padding: const EdgeInsets.only(left: 36, bottom: 80),
+                  padding: const EdgeInsets.only(left: 16, bottom: 30),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: ElevatedButton.icon(
@@ -216,8 +214,58 @@ class _AccountPageState extends State<AccountPage> {
               height: 30,
               color: Colors.white,
             ),
-            onTap: () {
-              context.push(routeName);
+            onTap: () async {
+              String? url;
+              switch (label) {
+                case "Instagram":
+                  if (_user?.instagram != null && _user!.instagram!.isNotEmpty) {
+                    String igHandle = _user!.instagram!.startsWith('@')
+                        ? _user!.instagram!.substring(1)
+                        : _user!.instagram!;
+                    url = 'https://www.instagram.com/$igHandle';
+                    String deepLink = 'instagram://user?username=$igHandle';
+                    if (await canLaunchUrl(Uri.parse(deepLink))) {
+                      await launchUrl(Uri.parse(deepLink), mode: LaunchMode.externalApplication);
+                    } else {
+                      await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+                    }
+                  }
+                  break;
+                case "Twitter":
+                  if (_user?.twitter != null && _user!.twitter!.isNotEmpty) {
+                    String twitterHandle = _user!.twitter!.startsWith('@')
+                        ? _user!.twitter!.substring(1)
+                        : _user!.twitter!;
+                    url = 'https://x.com/$twitterHandle';
+                    String deepLink = 'twitter://user?screen_name=$twitterHandle';
+                    if (await canLaunchUrl(Uri.parse(deepLink))) {
+                      await launchUrl(Uri.parse(deepLink), mode: LaunchMode.externalApplication);
+                    } else {
+                      await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+                    }
+                  }
+                  break;
+                case "Website":
+                  if (_user?.website != null && _user!.website!.isNotEmpty) {
+                    url = _user!.website!;
+                    await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+                  }
+                  break;
+                case "Terms & privacy":
+                  if (_user?.terms != null && _user!.terms!.isNotEmpty) {
+                    url = _user!.terms!;
+                    await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+                  }
+                  break;
+                default:
+                  context.push(routeName);
+                  return;
+              }
+              if (url == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('$label chưa được thiết lập')),
+                );
+              }
             },
           ),
         ),

@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -102,14 +100,46 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _isLoading = true;
     });
     try {
+      // Chuẩn hóa dữ liệu cho Instagram
+      String instagram = _instagramController.text.trim();
+      if (instagram.isNotEmpty) {
+        if (instagram.contains('instagram.com/')) {
+          // Trích xuất username từ URL (ví dụ: https://www.instagram.com/username/)
+          final uri = Uri.parse(instagram);
+          instagram = '@${uri.pathSegments.last}';
+        } else if (!instagram.startsWith('@')) {
+          instagram = '@$instagram';
+        }
+      }
+      // Chuẩn hóa dữ liệu cho Twitter
+      String twitter = _twitterController.text.trim();
+      if (twitter.isNotEmpty) {
+        if (twitter.contains('twitter.com/') || twitter.contains('x.com/')) {
+          // Trích xuất username từ URL (ví dụ: https://twitter.com/username hoặc https://x.com/username)
+          final uri = Uri.parse(twitter);
+          twitter = '@${uri.pathSegments.last}';
+        } else if (!twitter.startsWith('@')) {
+          twitter = '@$twitter';
+        }
+      }
+      // Chuẩn hóa dữ liệu cho Website và Terms
+      String website = _websiteController.text.trim();
+      if (website.isNotEmpty && !website.startsWith('http://') && !website.startsWith('https://')) {
+        website = 'https://$website';
+      }
+      String terms = _termsController.text.trim();
+      if (terms.isNotEmpty && !terms.startsWith('http://') && !terms.startsWith('https://')) {
+        terms = 'https://$terms';
+      }
+
       await _user!.updateInFirestore(
-          name: _nameController.text.trim(),
-          lastName: _lastNameController.text.trim(),
-          imageUrl: _base64Image,
-          instagram: _instagramController.text.trim(),
-          twitter: _twitterController.text.trim(),
-          website: _websiteController.text.trim(),
-          terms: _termsController.text.trim(),
+        name: _nameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        imageUrl: _base64Image,
+        instagram: instagram,
+        twitter: twitter,
+        website: website,
+        terms: terms,
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully')),
@@ -242,8 +272,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     const SizedBox(height: 18),
                     FormLabel(text: 'Last Name'),
                     CustomInputField(
-                        hintText: "Last Name",
-                        controller: _lastNameController,
+                      hintText: "Last Name",
+                      controller: _lastNameController,
                     ),
                     const SizedBox(height: 18),
                     FormLabel(text: 'Email'),
