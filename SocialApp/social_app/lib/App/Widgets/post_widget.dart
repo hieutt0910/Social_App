@@ -30,7 +30,6 @@ class PostWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        context.read<PostBloc>().add(PostViewIncreaseRequested(post.id));
         context.push('/view-post', extra: post.id);
       },
       child: Container(

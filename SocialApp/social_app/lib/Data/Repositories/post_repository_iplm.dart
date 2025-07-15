@@ -32,4 +32,7 @@ class PostRepositoryImpl implements PostRepository {
 
   @override
   Future<void> incrementViews(String postId) => remote.incrementViews(postId);
+  
+  @override
+  Stream<List<PostEntity>> getPostsByHashtag(String hashtag) => remote.getPostsByHashtag(hashtag);
 }

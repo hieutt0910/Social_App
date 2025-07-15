@@ -4,6 +4,7 @@ import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/bloc/post/post_state.dart';
 import 'package:social_app/app/widgets/post_widget.dart';
+import 'package:social_app/style/app_text_style.dart';
 
 class FeedTab extends StatefulWidget {
   const FeedTab({super.key});
@@ -32,7 +33,12 @@ class FeedTabState extends State<FeedTab> {
         if (state is PostListLoaded) {
           final posts = state.posts;
           if (posts.isEmpty) {
-            return const Center(child: Text('Chưa có bài viết'));
+            return Center(
+              child: Text(
+                'Chưa có bài viết',
+                style: AppTextStyles.bodyTextMediumGrey,
+              ),
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 16),

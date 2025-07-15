@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -71,6 +72,12 @@ class _CreatePostPageState extends State<CreatePostPage> {
   }
 
   @override
+  void dispose() {
+    _captionController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<PostBloc, PostState>(
       listener: (context, state) {
@@ -78,7 +85,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
           _captionController.clear();
           _selectedImages.clear();
           _chosenTags.clear();
-          Navigator.pop(context);
+          context.go('/widget-tree');
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Đã đăng bài viết')));

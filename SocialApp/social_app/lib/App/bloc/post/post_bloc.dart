@@ -6,12 +6,14 @@ import 'package:social_app/domain/entity/post.dart';
 import 'package:social_app/domain/usecase/post/create_post.dart';
 import 'package:social_app/domain/usecase/post/delete_post.dart';
 import 'package:social_app/domain/usecase/post/get_post.dart';
+import 'package:social_app/domain/usecase/post/get_post_by_hashtag.dart';
 import 'package:social_app/domain/usecase/post/increment_view_usecase.dart';
 import 'package:social_app/domain/usecase/post/toggle_like_post.dart';
 
 class PostBloc extends Bloc<PostEvent, PostState> {
   final CreatePostUseCase _createPost;
   final GetPostsUseCase _getPosts;
+  final GetPostsByHashtagUseCase _getByHashtag;
   final ToggleLikeUseCase _toggleLike;
   final DeletePostUseCase _deletePost;
   final IncrementViewUseCase _incrementView;
@@ -21,22 +23,43 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   PostBloc({
     required CreatePostUseCase createPost,
     required GetPostsUseCase getPosts,
+    required GetPostsByHashtagUseCase getByHashtag,
     required ToggleLikeUseCase toggleLike,
     required DeletePostUseCase deletePost,
     required IncrementViewUseCase incrementView,
-  }) : _createPost = createPost,
-       _getPosts = getPosts,
-       _toggleLike = toggleLike,
-       _deletePost = deletePost,
-       _incrementView = incrementView,
-       super(PostInitial()) {
+  })  : _createPost = createPost,
+        _getPosts = getPosts,
+        _getByHashtag = getByHashtag,
+        _toggleLike = toggleLike,
+        _deletePost = deletePost,
+        _incrementView = incrementView,
+        super(PostInitial()) {
     on<PostCreateRequested>(_onCreate);
-    on<PostFetchRequested>(_onFetch);
-    on<PostToggleLikeRequested>(_onToggleLike);
     on<PostDeleteRequested>(_onDelete);
-    on<PostViewIncreaseRequested>(_onIncreaseView); // ✅ Gắn sự kiện tăng view
+    on<PostToggleLikeRequested>(_onToggleLike);
+    on<PostViewIncreaseRequested>(_onIncreaseView);
+    on<PostFetchRequested>(_onFetchAll);
+    on<PostByHashtagRequested>(_onFetchByHashtag);
     on<PostsArrived>((e, emit) => emit(PostListLoaded(e.posts)));
     on<PostsError>((e, emit) => emit(PostFailure(e.error.toString())));
+  }
+
+  void _listen(Stream<List<PostEntity>> stream) {
+    _postsSub?.cancel();
+    _postsSub = stream.listen(
+      (posts) => add(PostsArrived(posts)),
+      onError: (err) => add(PostsError(err)),
+    );
+  }
+
+  Future<void> _onFetchAll(PostFetchRequested e, Emitter<PostState> emit) async {
+    emit(PostLoading());
+    _listen(_getPosts());
+  }
+
+  Future<void> _onFetchByHashtag(PostByHashtagRequested e, Emitter<PostState> emit) async {
+    emit(PostLoading());
+    _listen(_getByHashtag(e.hashtag));
   }
 
   Future<void> _onCreate(PostCreateRequested e, Emitter<PostState> emit) async {
@@ -58,34 +81,18 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _onFetch(
-    PostFetchRequested event,
-    Emitter<PostState> emit,
-  ) async {
-    emit(PostLoading());
-    await _postsSub?.cancel();
-    _postsSub = _getPosts().listen(
-      (posts) => add(PostsArrived(posts)),
-      onError: (err) => add(PostsError(err)),
-    );
-  }
-
-  Future<void> _onToggleLike(
-    PostToggleLikeRequested e,
-    Emitter<PostState> emit,
-  ) async {
+  Future<void> _onToggleLike(PostToggleLikeRequested e, Emitter<PostState> emit) async {
     final current = state;
     if (current is! PostListLoaded) return;
 
-    final updatedPosts =
-        current.posts.map((p) {
-          if (p.id != e.post.id) return p;
-          return e.post.isLikedBy(e.userId)
-              ? p.copyWith(likedBy: List.from(p.likedBy)..remove(e.userId))
-              : p.copyWith(likedBy: List.from(p.likedBy)..add(e.userId));
-        }).toList();
+    final updated = current.posts.map((p) {
+      if (p.id != e.post.id) return p;
+      return e.post.isLikedBy(e.userId)
+          ? p.copyWith(likedBy: List.from(p.likedBy)..remove(e.userId))
+          : p.copyWith(likedBy: List.from(p.likedBy)..add(e.userId));
+    }).toList();
 
-    emit(PostListLoaded(updatedPosts));
+    emit(PostListLoaded(updated));
 
     try {
       await _toggleLike(e.post, e.userId);
@@ -103,10 +110,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _onIncreaseView(
-    PostViewIncreaseRequested e,
-    Emitter<PostState> emit,
-  ) async {
+  Future<void> _onIncreaseView(PostViewIncreaseRequested e, Emitter<PostState> emit) async {
     try {
       await _incrementView(e.postId);
     } catch (err) {
