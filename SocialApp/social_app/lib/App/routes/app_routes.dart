@@ -1,5 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_app/Data/model/collection.dart';
+import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
+import 'package:social_app/app/bloc/verify/verify_bloc.dart';
 import 'package:social_app/app/pages/Selection/category_screen.dart';
 import 'package:social_app/app/pages/auth/forgot_password.dart';
 import 'package:social_app/app/pages/auth/set_new_password_screen.dart';
@@ -17,6 +21,7 @@ import 'package:social_app/app/pages/search_topic.dart';
 import 'package:social_app/app/pages/splash/splash_screen.dart';
 import 'package:social_app/app/pages/widget_tree.dart';
 import 'package:social_app/data/repositories/dynamic_link_handler.dart';
+import 'package:social_app/di.dart';
 import 'package:social_app/domain/entity/post.dart';
 
 class AppRouter {
@@ -34,10 +39,11 @@ class AppRouter {
         path: '/verify',
         builder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-
-          return VerifyPage(
-            email: args?['email'] ?? '',
-            fromRoute: args?['fromRoute'] ?? 'sign_in',
+          final email = args?['email'] as String? ?? '';
+          final fromRoute = args?['fromRoute'] as String? ?? 'sign_in';
+          return BlocProvider(
+            create: (_) => sl<VerifyBloc>(param1: email, param2: fromRoute),
+            child: VerifyPage(email: email, fromRoute: fromRoute),
           );
         },
       ),
@@ -49,20 +55,17 @@ class AppRouter {
         path: '/set-new-password',
         builder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-
-          return SetNewPasswordPage(email: args?['email'] ?? '');
+          final email = args?['email'] as String? ?? '';
+          return BlocProvider(
+            create: (_) => sl<SetNewPasswordBloc>(param1: email),
+            child: SetNewPasswordPage(email: email),
+          );
         },
       ),
       GoRoute(path: '/category', builder: (_, __) => const ChooseRolePage()),
       GoRoute(path: '/profile', builder: (_, __) => const AccountPage()),
-      GoRoute(
-        path: '/edit-profile',
-        builder: (_, __) => const EditProfilePage(),
-      ),
-      GoRoute(
-        path: '/user-profile',
-        builder: (_, __) => const UserProfilePage(),
-      ),
+      GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfilePage()),
+      GoRoute(path: '/user-profile', builder: (_, __) => const UserProfilePage()),
       GoRoute(
         path: '/other-profile',
         builder: (_, __) => const OtherUserProfilePage(),
@@ -70,11 +73,11 @@ class AppRouter {
       GoRoute(
         path: '/collection-detail',
         builder: (_, state) {
-          final collection = state.extra as Collection?;
-
+          final args = state.extra as Map<String, dynamic>?;
+          final collection = args?['collection'] as Collection?;
           return CollectionDetailPage(
-            collection:
-                collection ?? Collection(title: '', coverImage: '', images: []),
+            collection: collection ??
+                Collection(title: '', coverImage: '', images: []),
           );
         },
       ),
@@ -83,8 +86,14 @@ class AppRouter {
       GoRoute(path: '/create-post', builder: (_, __) => const CreatePostPage()),
       GoRoute(
         path: '/view-post',
-        builder: (context, state) {
-          final post = state.extra as PostEntity;
+        builder: (_, state) {
+          final args = state.extra as Map<String, dynamic>?;
+          final post = args?['post'] as PostEntity?;
+          if (post == null) {
+            return const Scaffold(
+              body: Center(child: Text('Error: No post data provided')),
+            );
+          }
           return ViewDetailPostPage(post: post);
         },
       ),

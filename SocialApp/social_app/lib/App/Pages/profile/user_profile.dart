@@ -79,6 +79,28 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  // Hàm kiểm tra xem chuỗi có phải là base64 hợp lệ
+  bool _isBase64(String? str) {
+    if (str == null || str.isEmpty) return false;
+    try {
+      base64Decode(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Hàm lấy ImageProvider cho ảnh đại diện
+  ImageProvider _getImageProvider(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return const AssetImage('assets/images/avatar.jpg');
+    }
+    if (_isBase64(imageUrl)) {
+      return MemoryImage(base64Decode(imageUrl));
+    }
+    return NetworkImage(imageUrl);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,9 +157,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundImage: _user?.imageUrl != null
-                        ? MemoryImage(base64Decode(_user!.imageUrl!))
-                        : const AssetImage('assets/images/avatar.jpg') as ImageProvider,
+                    backgroundImage: _getImageProvider(_user?.imageUrl),
                   ),
                 ),
               ),
@@ -330,7 +350,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         final collection = collections[index];
         return GestureDetector(
           onTap: () {
-            context.push('/collection-detail', extra: collection);
+            context.push('/collection-detail', extra: {'collection': collection});
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
