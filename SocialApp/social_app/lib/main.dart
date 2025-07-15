@@ -39,7 +39,9 @@ class _MyAppState extends State<MyApp> {
         BlocProvider<SignInBloc>(create: (_) => sl<SignInBloc>()),
         BlocProvider<SignUpBloc>(create: (_) => sl<SignUpBloc>()),
 
-        BlocProvider<ForgotPasswordBloc>(create: (_) => sl<ForgotPasswordBloc>()),
+        BlocProvider<ForgotPasswordBloc>(
+          create: (_) => sl<ForgotPasswordBloc>(),
+        ),
 
         BlocProvider<PostBloc>(create: (_) => sl<PostBloc>()),
       ],

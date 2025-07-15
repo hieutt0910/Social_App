@@ -70,3 +70,8 @@ class PostViewIncreaseRequested extends PostEvent {
   final String postId;
   const PostViewIncreaseRequested(this.postId);
 }
+
+class PostByHashtagRequested extends PostEvent {
+  final String hashtag;
+  const PostByHashtagRequested(this.hashtag);
+}

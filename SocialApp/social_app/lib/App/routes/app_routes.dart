@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_app/Data/model/collection.dart';
@@ -17,7 +16,8 @@ import 'package:social_app/app/pages/profile/edit_profile_page.dart';
 import 'package:social_app/app/pages/profile/other_profile_user.dart';
 import 'package:social_app/app/pages/profile/profile_screen.dart';
 import 'package:social_app/app/pages/profile/user_profile.dart';
-import 'package:social_app/app/pages/search_topic.dart';
+import 'package:social_app/app/pages/search_post/hashtag_post.dart';
+import 'package:social_app/app/pages/search_post/search_topic.dart';
 import 'package:social_app/app/pages/splash/splash_screen.dart';
 import 'package:social_app/app/pages/widget_tree.dart';
 import 'package:social_app/data/repositories/dynamic_link_handler.dart';
@@ -63,8 +63,14 @@ class AppRouter {
       ),
       GoRoute(path: '/category', builder: (_, __) => const ChooseRolePage()),
       GoRoute(path: '/profile', builder: (_, __) => const AccountPage()),
-      GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfilePage()),
-      GoRoute(path: '/user-profile', builder: (_, __) => const UserProfilePage()),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (_, __) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: '/user-profile',
+        builder: (_, __) => const UserProfilePage(),
+      ),
       GoRoute(
         path: '/other-profile',
         builder: (_, __) => const OtherUserProfilePage(),
@@ -75,8 +81,8 @@ class AppRouter {
           final args = state.extra as Map<String, dynamic>?;
           final collection = args?['collection'] as Collection?;
           return CollectionDetailPage(
-            collection: collection ??
-                Collection(title: '', coverImage: '', images: []),
+            collection:
+                collection ?? Collection(title: '', coverImage: '', images: []),
           );
         },
       ),
@@ -88,6 +94,13 @@ class AppRouter {
         builder: (_, state) {
           final id = state.extra as String;
           return ViewDetailPostPage(postId: id);
+        },
+      ),
+      GoRoute(
+        path: '/hashtag-posts',
+        builder: (_, state) {
+          final tag = (state.extra as String).replaceFirst('#', '');
+          return HashtagPostsPage(hashtag: tag);
         },
       ),
     ],

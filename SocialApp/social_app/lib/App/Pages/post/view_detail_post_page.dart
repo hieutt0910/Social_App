@@ -15,7 +15,7 @@ import 'package:social_app/style/app_text_style.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ViewDetailPostPage extends StatefulWidget {
-  final String postId;                       // 🔄 nhận id
+  final String postId;
   const ViewDetailPostPage({super.key, required this.postId});
 
   @override
@@ -29,10 +29,10 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
   @override
   void initState() {
     super.initState();
-    _commentController = TextEditingController()
-      ..addListener(() => setState(
-          () => _isTexting = _commentController.text.isNotEmpty));
-    // ✅ tăng view ngay khi mở trang
+    _commentController =
+        TextEditingController()..addListener(
+          () => setState(() => _isTexting = _commentController.text.isNotEmpty),
+        );
     context.read<PostBloc>().add(PostViewIncreaseRequested(widget.postId));
   }
 
@@ -67,30 +67,29 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
 
   // ────────────────────────────────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar() => AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: AssetsManager.showImage('assets/icons/like-black.svg'),
-            onPressed: () {}, // tuỳ bạn thêm
-          ),
-          IconButton(
-            icon: AssetsManager.showImage('assets/icons/plus-circle-black.svg'),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: AssetsManager.showImage('assets/icons/save-collection.svg'),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
-      );
+    backgroundColor: Colors.white,
+    elevation: 0,
+    actions: [
+      IconButton(
+        icon: AssetsManager.showImage('assets/icons/like-black.svg'),
+        onPressed: () {},
+      ),
+      IconButton(
+        icon: AssetsManager.showImage('assets/icons/plus-circle-black.svg'),
+        onPressed: () {},
+      ),
+      IconButton(
+        icon: AssetsManager.showImage('assets/icons/save-collection.svg'),
+        onPressed: () {},
+      ),
+      const SizedBox(width: 8),
+    ],
+  );
 
   // ────────────────────────────────────────────────────────────────────────────
   Widget _buildBody(BuildContext context, PostEntity post) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    final createdText =
-        timeago.format(post.createdAt, locale: 'en_short');
+    final createdText = timeago.format(post.createdAt, locale: 'en_short');
 
     return Column(
       children: [
@@ -100,26 +99,37 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header (avatar, tên, time) ──
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
                     children: [
-                      AssetsManager.showImage('assets/images/avatar.jpg',
-                          height: 40, width: 40, fit: BoxFit.cover, isCircle: true),
+                      AssetsManager.showImage(
+                        'assets/images/avatar.jpg',
+                        height: 40,
+                        width: 40,
+                        fit: BoxFit.cover,
+                        isCircle: true,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(post.userId,
-                                style: GoogleFonts.manrope(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black)),
-                            Text(createdText,
-                                style: GoogleFonts.manrope(
-                                    fontSize: 14, color: Colors.grey[600])),
+                            Text(
+                              post.userId,
+                              style: GoogleFonts.manrope(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              createdText,
+                              style: GoogleFonts.manrope(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -127,71 +137,80 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // ── Images ──
                 if (post.imageUrls.isNotEmpty)
                   PostImagesViewer(imageUrls: post.imageUrls),
-                // ── Caption ──
                 if (post.caption.isNotEmpty)
                   Container(
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
-                    child: Text(post.caption,
-                        style: AppTextStyles.bodyTextGrey),
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 20,
+                    ),
+                    child: Text(
+                      post.caption,
+                      style: AppTextStyles.bodyTextGrey,
+                    ),
                   ),
-                // ── Hashtag ──
                 if (post.hashtags.isNotEmpty)
                   Container(
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 20,
+                    ),
                     child: GradientText(
                       text: post.hashtags.map((t) => '#$t').join(' '),
                       style: AppTextStyles.bodyTextGrey,
                       fontSize: 15,
                     ),
                   ),
-                // ── Stats row ──
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _statItem(
-                          count: post.viewsCount,
-                          icon: 'assets/icons/eye.svg'),
+                        count: post.viewsCount,
+                        icon: 'assets/icons/eye.svg',
+                      ),
                       _statItem(
-                          count: post.commentsCount,
-                          icon: 'assets/icons/comment.svg'),
+                        count: post.commentsCount,
+                        icon: 'assets/icons/comment.svg',
+                      ),
                       Row(
                         children: [
-                          Text('${post.likesCount}',
-                              style: AppTextStyles.bodyTextGrey),
+                          Text(
+                            '${post.likesCount}',
+                            style: AppTextStyles.bodyTextGrey,
+                          ),
                           const SizedBox(width: 4),
                           GestureDetector(
                             onTap: () {
                               context.read<PostBloc>().add(
-                                  PostToggleLikeRequested(post, currentUid!));
+                                PostToggleLikeRequested(post, currentUid!),
+                              );
                             },
-                            child: post.isLikedBy(currentUid ?? '')
-                                ? AssetsManager.showImage(
-                                    'assets/icons/like-fill.svg',
-                                    width: 20,
-                                    height: 20,
-                                  )
-                                : AssetsManager.showImage(
-                                    'assets/icons/like.svg',
-                                    width: 20,
-                                    height: 20,
-                                  ),
+                            child:
+                                post.isLikedBy(currentUid ?? '')
+                                    ? AssetsManager.showImage(
+                                      'assets/icons/like-fill.svg',
+                                      width: 20,
+                                      height: 20,
+                                    )
+                                    : AssetsManager.showImage(
+                                      'assets/icons/like.svg',
+                                      width: 20,
+                                      height: 20,
+                                    ),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                // ── Comments list (mock) ──
                 Container(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 20,
+                  ),
                   child: const Column(
                     children: [
                       CommentCard(),
@@ -206,7 +225,6 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
             ),
           ),
         ),
-        // ── Comment input ──
         Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom + 10,
@@ -216,8 +234,13 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
           ),
           child: Row(
             children: [
-              AssetsManager.showImage('assets/images/avatar.jpg',
-                  height: 40, width: 40, fit: BoxFit.cover, isCircle: true),
+              AssetsManager.showImage(
+                'assets/images/avatar.jpg',
+                height: 40,
+                width: 40,
+                fit: BoxFit.cover,
+                isCircle: true,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
@@ -240,7 +263,6 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
                   child: CustomButton(
                     text: 'Post',
                     onPressed: () {
-                      // handle comment
                       _commentController.clear();
                     },
                     fontSize: 14,
@@ -255,10 +277,10 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
   }
 
   Widget _statItem({required int count, required String icon}) => Row(
-        children: [
-          Text('$count', style: AppTextStyles.bodyTextGrey),
-          const SizedBox(width: 4),
-          AssetsManager.showImage(icon),
-        ],
-      );
+    children: [
+      Text('$count', style: AppTextStyles.bodyTextGrey),
+      const SizedBox(width: 4),
+      AssetsManager.showImage(icon),
+    ],
+  );
 }

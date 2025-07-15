@@ -1,10 +1,5 @@
 import 'package:get_it/get_it.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:social_app/app/bloc/forgotpassword/forgotpw_bloc.dart';
-import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
-import 'package:social_app/app/bloc/signin/signin_bloc.dart';
-import 'package:social_app/app/bloc/signup/signup_bloc.dart';
-import 'package:social_app/app/bloc/verify/verify_bloc.dart';
 import 'package:social_app/data/datasources/firebase/post_remote_data_source_impl.dart';
 
 import 'package:social_app/data/datasources/post_remote_data_source.dart';
@@ -15,6 +10,7 @@ import 'package:social_app/domain/repositories/post_repository.dart';
 import 'package:social_app/domain/usecase/post/create_post.dart';
 import 'package:social_app/domain/usecase/post/delete_post.dart';
 import 'package:social_app/domain/usecase/post/get_post.dart';
+import 'package:social_app/domain/usecase/post/get_post_by_hashtag.dart';
 import 'package:social_app/domain/usecase/post/increment_view_usecase.dart';
 import 'package:social_app/domain/usecase/post/toggle_like_post.dart';
 
@@ -35,6 +31,7 @@ Future<void> initDI() async {
 
   sl.registerLazySingleton(() => CreatePostUseCase(sl()));
   sl.registerLazySingleton(() => GetPostsUseCase(sl()));
+  sl.registerLazySingleton(() => GetPostsByHashtagUseCase(sl()));
   sl.registerLazySingleton(() => ToggleLikeUseCase(sl()));
   sl.registerLazySingleton(() => DeletePostUseCase(sl()));
   sl.registerLazySingleton(() => IncrementViewUseCase(sl()));
@@ -43,6 +40,7 @@ Future<void> initDI() async {
     () => PostBloc(
       createPost: sl(),
       getPosts: sl(),
+      getByHashtag: sl(),
       toggleLike: sl(),
       deletePost: sl(),
       incrementView: sl(),

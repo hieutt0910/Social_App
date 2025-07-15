@@ -36,14 +36,18 @@ class ListCategory extends StatelessWidget {
         padding: EdgeInsets.zero,
         separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
-          final count = 10 + rnd.nextInt(31); 
+          final count = 10 + rnd.nextInt(31);
 
           return GestureDetector(
-            onTap: () => context.push('/search-topic'),
+            onTap:
+                () => context.push(
+                  '/hashtag-posts',
+                  extra: titles[index].toLowerCase(),
+                ),
             child: SizedBox(
               width: cardWidth,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start, 
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
                     height: height,
