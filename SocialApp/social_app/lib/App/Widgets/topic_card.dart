@@ -1,12 +1,12 @@
 import 'dart:math' as math;
-import 'dart:ui'; // ImageFilter.blur
+import 'dart:ui'; 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_app/app/utils/assets_manage.dart';
 
 class TopicCard extends StatelessWidget {
-  final String imagePath; // ảnh chính
-  final String? overlayImagePath; // ảnh phủ (mặc định = ảnh chính)
+  final String imagePath; 
+  final String? overlayImagePath; 
   final String title;
   final bool alignLeft;
 
@@ -15,7 +15,7 @@ class TopicCard extends StatelessWidget {
     required this.imagePath,
     required this.title,
     required this.alignLeft,
-    this.overlayImagePath, // NEW (optional)
+    this.overlayImagePath, 
   });
 
   @override

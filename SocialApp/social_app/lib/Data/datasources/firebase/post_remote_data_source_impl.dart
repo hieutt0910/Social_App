@@ -10,7 +10,8 @@ import 'package:social_app/data/datasources/post_remote_data_source.dart';
 class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   final FirebaseFirestore _firestore;
   final CloudinaryService _cloudinaryService;
-
+  CollectionReference<Map<String, dynamic>> get _postCol =>
+      _firestore.collection('posts');
   PostRemoteDataSourceImpl({
     FirebaseFirestore? firestore,
     required CloudinaryService cloudinaryService,
@@ -87,5 +88,19 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
       final currentViews = snapshot.data()?['viewsCount'] ?? 0;
       transaction.update(docRef, {'viewsCount': (currentViews as int) + 1});
     });
+  }
+
+  @override
+  Stream<List<PostEntity>> getPostsByHashtag(String hashtag) {
+    return _postCol
+        .where('hashtags', arrayContains: hashtag)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snap) =>
+              snap.docs
+                  .map((d) => PostModel.fromMap(d.data(), d.id).toEntity())
+                  .toList(),
+        );
   }
 }
