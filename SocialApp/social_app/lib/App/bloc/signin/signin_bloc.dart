@@ -37,15 +37,13 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
           .signInWithEmailAndPassword(email: event.email, password: event.password);
 
       if (userCredential.user != null) {
-        final appUser = AppUser(
-          uid: userCredential.user!.uid,
-          email: event.email,
-        );
-        await appUser.saveToFirestore();
-      }
+        // Kiểm tra xem người dùng đã có tài liệu trong Firestore chưa
+        await AppUser.getFromFirestore(userCredential.user!.uid);
 
-      await DynamicLinksHandler.sendSignInLink(event.email);
-      emit(SignInSuccess());
+
+        await DynamicLinksHandler.sendSignInLink(event.email);
+        emit(SignInSuccess());
+      }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
@@ -88,13 +86,8 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
       final User? user = userCredential.user;
 
       if (user != null) {
-        final appUser = AppUser(
-          uid: user.uid,
-          email: user.email ?? '',
-          name: user.displayName ?? 'Unknown',
-          imageUrl: user.photoURL,
-        );
-        await appUser.saveToFirestore();
+        // Kiểm tra xem người dùng đã có tài liệu trong Firestore chưa
+        await AppUser.getFromFirestore(user.uid);
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('pending_email', user.email ?? '');
