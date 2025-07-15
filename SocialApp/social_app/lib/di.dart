@@ -1,10 +1,5 @@
 import 'package:get_it/get_it.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:social_app/app/bloc/forgotpassword/forgotpw_bloc.dart';
-import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
-import 'package:social_app/app/bloc/signin/signin_bloc.dart';
-import 'package:social_app/app/bloc/signup/signup_bloc.dart';
-import 'package:social_app/app/bloc/verify/verify_bloc.dart';
 import 'package:social_app/data/datasources/firebase/post_remote_data_source_impl.dart';
 
 import 'package:social_app/data/datasources/post_remote_data_source.dart';

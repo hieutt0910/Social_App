@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_app/Data/model/collection.dart';
@@ -63,8 +62,14 @@ class AppRouter {
       ),
       GoRoute(path: '/category', builder: (_, __) => const ChooseRolePage()),
       GoRoute(path: '/profile', builder: (_, __) => const AccountPage()),
-      GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfilePage()),
-      GoRoute(path: '/user-profile', builder: (_, __) => const UserProfilePage()),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (_, __) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: '/user-profile',
+        builder: (_, __) => const UserProfilePage(),
+      ),
       GoRoute(
         path: '/other-profile',
         builder: (_, __) => const OtherUserProfilePage(),
@@ -75,8 +80,8 @@ class AppRouter {
           final args = state.extra as Map<String, dynamic>?;
           final collection = args?['collection'] as Collection?;
           return CollectionDetailPage(
-            collection: collection ??
-                Collection(title: '', coverImage: '', images: []),
+            collection:
+                collection ?? Collection(title: '', coverImage: '', images: []),
           );
         },
       ),
