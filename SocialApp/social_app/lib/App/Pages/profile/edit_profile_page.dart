@@ -74,6 +74,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
+  // Hàm kiểm tra xem chuỗi có phải là base64 hợp lệ
+  bool _isBase64(String? str) {
+    if (str == null || str.isEmpty) return false;
+    try {
+      base64Decode(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Hàm lấy ImageProvider cho ảnh đại diện
+  ImageProvider _getImageProvider(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return const AssetImage('assets/images/img_10.png');
+    }
+    if (_isBase64(imageUrl)) {
+      return MemoryImage(base64Decode(imageUrl));
+    }
+    return NetworkImage(imageUrl);
+  }
+
   Future<void> _saveChanges() async {
     if (_isLoading || _user == null) return;
     setState(() {
@@ -173,9 +195,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           radius: 50,
                           backgroundImage: _selectedImage != null
                               ? FileImage(_selectedImage!)
-                              : _user?.imageUrl != null
-                              ? MemoryImage(base64Decode(_user!.imageUrl!))
-                              : const AssetImage('assets/images/img_10.png') as ImageProvider,
+                              : _getImageProvider(_user?.imageUrl),
                         ),
                       ),
                       Positioned(
