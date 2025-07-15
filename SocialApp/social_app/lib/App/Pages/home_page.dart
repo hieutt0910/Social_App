@@ -109,6 +109,8 @@ class _HomePageState extends State<HomePage>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
+                    FeedTab(),
+                    FeedTab(),
                     FeedTab(), // Popular
                   ],
                 ),

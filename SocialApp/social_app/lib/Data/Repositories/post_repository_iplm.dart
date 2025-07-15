@@ -29,4 +29,7 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<void> unlikePost(String postId, String uid) =>
       remote.unlikePost(postId, uid);
+
+  @override
+  Future<void> incrementViews(String postId) => remote.incrementViews(postId);
 }

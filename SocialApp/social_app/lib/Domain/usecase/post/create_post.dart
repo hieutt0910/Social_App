@@ -13,6 +13,7 @@ class CreatePostUseCase {
     required String caption,
     required List<File> images,
     required String userId,
+    List<String> hashtags = const [], 
   }) async {
     if (caption.trim().isEmpty && images.isEmpty) {
       throw Exception('Bạn chưa nhập nội dung hoặc chọn ảnh');
@@ -21,7 +22,7 @@ class CreatePostUseCase {
     final postId = _uuid.v4();
 
     final imageUrls = await _repo.uploadImages(postId, images);
-    print('Image URLs: $imageUrls');
+
     final post = PostEntity(
       id: postId,
       userId: userId,
@@ -30,6 +31,8 @@ class CreatePostUseCase {
       createdAt: DateTime.now(),
       likedBy: const [],
       commentsCount: 0,
+      hashtags: hashtags, 
+      viewsCount: 0
     );
 
     await _repo.createPost(post);

@@ -14,7 +14,7 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.customGrey,
   );
-  static final TextStyle bodyTextMediumbGrey = GoogleFonts.plusJakartaSans(
+  static final TextStyle bodyTextMediumGrey = GoogleFonts.plusJakartaSans(
     fontSize: 14,
     fontWeight: FontWeight.bold,
     color: AppColors.customGrey,
@@ -24,7 +24,7 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.black,
   );
-  static final TextStyle bodyTextMediumblack = GoogleFonts.plusJakartaSans(
+  static final TextStyle bodyTextMediumBlack = GoogleFonts.plusJakartaSans(
     fontSize: 14,
     fontWeight: FontWeight.bold,
     color: AppColors.black,

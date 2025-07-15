@@ -8,5 +8,6 @@ abstract class PostRepository {
   Future<void> deletePost(String postId);
   Future<void> likePost(String postId, String userId);
   Future<void> unlikePost(String postId, String userId);
+  Future<void> incrementViews(String postId);
 }
 

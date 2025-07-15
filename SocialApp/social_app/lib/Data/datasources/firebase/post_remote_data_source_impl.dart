@@ -2,12 +2,10 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 import 'package:social_app/data/model/post.dart';
 import 'package:social_app/data/servives/cloudinary_service.dart';
 import 'package:social_app/domain/entity/post.dart';
 import 'package:social_app/data/datasources/post_remote_data_source.dart';
-
 
 class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   final FirebaseFirestore _firestore;
@@ -16,8 +14,8 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   PostRemoteDataSourceImpl({
     FirebaseFirestore? firestore,
     required CloudinaryService cloudinaryService,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _cloudinaryService = cloudinaryService;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _cloudinaryService = cloudinaryService;
 
   @override
   Future<List<String>> uploadImages(String postId, List<File> images) async {
@@ -49,9 +47,12 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => PostModel.fromMap(doc.data()).toEntity())
-              .toList(),
+          (snapshot) =>
+              snapshot.docs
+                  .map(
+                    (doc) => PostModel.fromMap(doc.data(), doc.id).toEntity(),
+                  )
+                  .toList(),
         );
   }
 
@@ -71,6 +72,20 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   Future<void> unlikePost(String postId, String uid) async {
     await _firestore.collection('posts').doc(postId).update({
       'likedBy': FieldValue.arrayRemove([uid]),
+    });
+  }
+
+  @override
+  Future<void> incrementViews(String postId) async {
+    final docRef = _firestore.collection('posts').doc(postId);
+
+    await _firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+
+      if (!snapshot.exists) return;
+
+      final currentViews = snapshot.data()?['viewsCount'] ?? 0;
+      transaction.update(docRef, {'viewsCount': (currentViews as int) + 1});
     });
   }
 }

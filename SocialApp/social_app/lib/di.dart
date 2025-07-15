@@ -8,19 +8,17 @@ import 'package:social_app/data/servives/cloudinary_service.dart';
 import 'package:social_app/domain/repositories/post_repository.dart';
 
 import 'package:social_app/domain/usecase/post/create_post.dart';
+import 'package:social_app/domain/usecase/post/delete_post.dart';
 import 'package:social_app/domain/usecase/post/get_post.dart';
+import 'package:social_app/domain/usecase/post/increment_view_usecase.dart';
 import 'package:social_app/domain/usecase/post/toggle_like_post.dart';
 
 import 'package:social_app/app/bloc/post/post_bloc.dart';
 
-
 final sl = GetIt.instance;
 
 Future<void> initDI() async {
-  // Đăng ký CloudinaryService
   sl.registerLazySingleton<CloudinaryService>(() => CloudinaryService());
-
-  // Đăng ký PostRemoteDataSourceImpl với CloudinaryService
   sl.registerLazySingleton<PostRemoteDataSource>(
     () => PostRemoteDataSourceImpl(
       firestore: FirebaseFirestore.instance,
@@ -28,17 +26,21 @@ Future<void> initDI() async {
     ),
   );
 
-  sl.registerLazySingleton<PostRepository>(
-    () => PostRepositoryImpl(sl()),
-  );
+  sl.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(sl()));
 
   sl.registerLazySingleton(() => CreatePostUseCase(sl()));
   sl.registerLazySingleton(() => GetPostsUseCase(sl()));
   sl.registerLazySingleton(() => ToggleLikeUseCase(sl()));
+  sl.registerLazySingleton(() => DeletePostUseCase(sl()));
+  sl.registerLazySingleton(() => IncrementViewUseCase(sl()));
 
-  sl.registerFactory(() => PostBloc(
-        createPost: sl(),
-        getPosts: sl(),
-        toggleLike: sl(),
-      ));
+  sl.registerFactory(
+    () => PostBloc(
+      createPost: sl(),
+      getPosts: sl(),
+      toggleLike: sl(),
+      deletePost: sl(),
+      incrementView: sl(),
+    ),
+  );
 }

@@ -9,70 +9,81 @@ class AssetsManager {
     double? width,
     double? height,
     Widget? placeholder,
+    bool isCircle = false,
   }) {
     final isSvg = Uri.parse(path).path.toLowerCase().endsWith('.svg');
 
+    Widget wrap(Widget img) => isCircle ? ClipOval(child: img) : img;
+
     if (isSvg && path.startsWith('assets/')) {
-      return SvgPicture.asset(
-        path,
-        width: width,
-        height: height,
-        fit: fit,
-        placeholderBuilder:
-            (_) => placeholder ?? _loadingIndicator(width, height),
+      return wrap(
+        SvgPicture.asset(
+          path,
+          width: width,
+          height: height,
+          fit: fit,
+          placeholderBuilder:
+              (_) => placeholder ?? _loadingIndicator(width, height),
+        ),
       );
     }
 
     if (isSvg && path.startsWith('http')) {
-      return SvgPicture.network(
-        path,
-        width: width,
-        height: height,
-        fit: fit,
-        placeholderBuilder:
-            (_) => placeholder ?? _loadingIndicator(width, height),
+      return wrap(
+        SvgPicture.network(
+          path,
+          width: width,
+          height: height,
+          fit: fit,
+          placeholderBuilder:
+              (_) => placeholder ?? _loadingIndicator(width, height),
+        ),
       );
     }
 
     if (path.startsWith('http')) {
-      return Image.network(
-        path,
-        width: width,
-        height: height,
-        fit: fit,
-        errorBuilder: (context, error, stackTrace) {
-          debugPrint('❌ Lỗi tải ảnh: $error');
-          return _fallbackWidget();
-        },
-        loadingBuilder: (_, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return placeholder ?? _loadingIndicator(width, height);
-        },
+      return wrap(
+        Image.network(
+          path,
+          width: width,
+          height: height,
+          fit: fit,
+          errorBuilder: (_, error, __) {
+            return _fallbackWidget();
+          },
+          loadingBuilder: (_, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return placeholder ?? _loadingIndicator(width, height);
+          },
+        ),
       );
     }
 
     if (path.startsWith('assets/')) {
-      return Image.asset(
-        path,
+      return wrap(
+        Image.asset(
+          path,
+          width: width,
+          height: height,
+          fit: fit,
+          errorBuilder: (_, __, ___) => _fallbackWidget(),
+        ),
+      );
+    }
+
+    return wrap(
+      Image.file(
+        File(path),
         width: width,
         height: height,
         fit: fit,
         errorBuilder: (_, __, ___) => _fallbackWidget(),
-      );
-    }
-
-    return Image.file(
-      File(path),
-      width: width,
-      height: height,
-      fit: fit,
-      errorBuilder: (_, __, ___) => _fallbackWidget(),
+      ),
     );
   }
 
-  static Widget _fallbackWidget() {
-    return const Icon(Icons.broken_image, size: 48, color: Colors.grey);
-  }
+  static Widget _fallbackWidget() =>
+      const Icon(Icons.broken_image, size: 48, color: Colors.grey);
 
   static Widget _loadingIndicator(double? width, double? height) {
     return SizedBox(

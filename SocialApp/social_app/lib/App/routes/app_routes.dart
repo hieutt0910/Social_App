@@ -17,7 +17,6 @@ import 'package:social_app/app/pages/search_topic.dart';
 import 'package:social_app/app/pages/splash/splash_screen.dart';
 import 'package:social_app/app/pages/widget_tree.dart';
 import 'package:social_app/data/repositories/dynamic_link_handler.dart';
-import 'package:social_app/domain/entity/post.dart';
 
 class AppRouter {
   AppRouter._();
@@ -83,9 +82,9 @@ class AppRouter {
       GoRoute(path: '/create-post', builder: (_, __) => const CreatePostPage()),
       GoRoute(
         path: '/view-post',
-        builder: (context, state) {
-          final post = state.extra as PostEntity;
-          return ViewDetailPostPage(post: post);
+        builder: (_, state) {
+          final id = state.extra as String;
+          return ViewDetailPostPage(postId: id);
         },
       ),
     ],
