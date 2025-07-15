@@ -13,19 +13,17 @@ import 'package:social_app/data/servives/cloudinary_service.dart';
 import 'package:social_app/domain/repositories/post_repository.dart';
 
 import 'package:social_app/domain/usecase/post/create_post.dart';
+import 'package:social_app/domain/usecase/post/delete_post.dart';
 import 'package:social_app/domain/usecase/post/get_post.dart';
+import 'package:social_app/domain/usecase/post/increment_view_usecase.dart';
 import 'package:social_app/domain/usecase/post/toggle_like_post.dart';
 
 import 'package:social_app/app/bloc/post/post_bloc.dart';
 
-
 final sl = GetIt.instance;
 
 Future<void> initDI() async {
-  // Đăng ký CloudinaryService
   sl.registerLazySingleton<CloudinaryService>(() => CloudinaryService());
-
-  // Đăng ký PostRemoteDataSourceImpl với CloudinaryService
   sl.registerLazySingleton<PostRemoteDataSource>(
     () => PostRemoteDataSourceImpl(
       firestore: FirebaseFirestore.instance,
@@ -33,34 +31,21 @@ Future<void> initDI() async {
     ),
   );
 
-  sl.registerLazySingleton<PostRepository>(
-    () => PostRepositoryImpl(sl()),
-  );
+  sl.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(sl()));
 
   sl.registerLazySingleton(() => CreatePostUseCase(sl()));
   sl.registerLazySingleton(() => GetPostsUseCase(sl()));
   sl.registerLazySingleton(() => ToggleLikeUseCase(sl()));
+  sl.registerLazySingleton(() => DeletePostUseCase(sl()));
+  sl.registerLazySingleton(() => IncrementViewUseCase(sl()));
 
-  sl.registerFactory(() => PostBloc(
-        createPost: sl(),
-        getPosts: sl(),
-        toggleLike: sl(),
-      ));
-  // Đăng ký các BLoC cho Authentication
-  sl.registerFactory(() => SignInBloc());
-  sl.registerFactory(() => SignUpBloc());
-  sl.registerFactory(() => ForgotPasswordBloc());
-
-  // Đăng ký VerifyBloc với tham số email và fromRoute
-  sl.registerFactoryParam<VerifyBloc, String, String>(
-        (email, fromRoute) => VerifyBloc(
-      email: email ?? '',
-      fromRoute: fromRoute ?? '',
+  sl.registerFactory(
+    () => PostBloc(
+      createPost: sl(),
+      getPosts: sl(),
+      toggleLike: sl(),
+      deletePost: sl(),
+      incrementView: sl(),
     ),
-  );
-
-  // Đăng ký SetNewPasswordBloc với tham số email
-  sl.registerFactoryParam<SetNewPasswordBloc, String, void>(
-        (email, _) => SetNewPasswordBloc(email: email ?? ''),
   );
 }

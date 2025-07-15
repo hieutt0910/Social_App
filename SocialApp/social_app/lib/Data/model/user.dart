@@ -23,7 +23,6 @@ class AppUser {
     this.terms,
   });
 
-  // Chuyển đổi từ Map (Firestore) sang đối tượng AppUser
   factory AppUser.fromMap(Map<String, dynamic> data, String uid) {
     return AppUser(
       uid: uid,

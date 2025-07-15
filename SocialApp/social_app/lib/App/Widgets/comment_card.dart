@@ -18,19 +18,21 @@ class CommentCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AssetsManager.showImage(
-            'https://avatar.iran.liara.run/public',
+            'assets/images/avatar.jpg',
             height: 30,
             width: 30,
             fit: BoxFit.cover,
+            isCircle: true,
           ),
+
           SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Trần Trọng Hiếu", style: AppTextStyles.bodyTextBlack),
-              Text("Trần Trọng Hiếu", style: AppTextStyles.bodyTextMediumblack),
+              Text("Trần Trọng Hiếu", style: AppTextStyles.bodyTextMediumBlack),
               SizedBox(height: 10),
-              Text("1 phút trước", style: AppTextStyles.bodyTextMediumbGrey),
+              Text("1 phút trước", style: AppTextStyles.bodyTextMediumGrey),
             ],
           ),
         ],

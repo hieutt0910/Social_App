@@ -1,7 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:social_app/app/bloc/post/post_bloc.dart';
+import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/domain/entity/post.dart';
+import 'package:social_app/style/app_text_style.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:social_app/app/utils/assets_manage.dart';
 
@@ -18,11 +23,16 @@ class PostWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final String? currentUid = user?.uid;
     final uid = post.userId;
     final createdText = timeago.format(post.createdAt, locale: 'en_short');
 
     return GestureDetector(
-      onTap: () => context.push('/view-post', extra: post),
+      onTap: () {
+        context.read<PostBloc>().add(PostViewIncreaseRequested(post.id));
+        context.push('/view-post', extra: post.id);
+      },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
@@ -37,10 +47,11 @@ class PostWidget extends StatelessWidget {
               child: Row(
                 children: [
                   AssetsManager.showImage(
-                    'https://avatar.iran.liara.run/public',
+                    'assets/images/avatar1.jpg',
                     height: 30,
                     width: 30,
                     fit: BoxFit.cover,
+                    isCircle: true,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -68,6 +79,7 @@ class PostWidget extends StatelessWidget {
                 post.imageUrls.first,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                height: 230,
               ),
 
             if (post.caption.isNotEmpty)
@@ -76,7 +88,13 @@ class PostWidget extends StatelessWidget {
                   horizontal: 14,
                   vertical: 10,
                 ),
-                child: Text(post.caption),
+                child: Text(
+                  post.caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+
+                  style: AppTextStyles.bodyTextMediumBlack,
+                ),
               ),
 
             Padding(
@@ -112,24 +130,32 @@ class PostWidget extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: onLike,
-                        child: Icon(
-                          post.isLikedBy(uid)
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: post.isLikedBy(uid) ? Colors.red : Colors.grey,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
                       Text(
                         '${post.likesCount}',
-                        style: GoogleFonts.manrope(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                        style: AppTextStyles.bodyTextMediumGrey,
                       ),
+                      const SizedBox(width: 6),
+
+                      GestureDetector(
+                        onTap: () {
+                          context.read<PostBloc>().add(
+                            PostToggleLikeRequested(post, currentUid),
+                          );
+                        },
+                        child:
+                            post.isLikedBy(currentUid!)
+                                ? AssetsManager.showImage(
+                                  'assets/icons/like-fill.svg',
+                                  width: 20,
+                                  height: 20,
+                                )
+                                : AssetsManager.showImage(
+                                  'assets/icons/like.svg',
+                                  width: 20,
+                                  height: 20,
+                                ),
+                      ),
+                      const SizedBox(width: 4),
                     ],
                   ),
                 ],

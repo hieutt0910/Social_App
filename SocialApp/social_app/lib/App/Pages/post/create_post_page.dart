@@ -7,9 +7,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/bloc/post/post_state.dart';
-
 import 'package:social_app/app/Widgets/Button.dart';
 import 'package:social_app/app/utils/assets_manage.dart';
+import 'package:social_app/app/widgets/gradient_text.dart';
+import 'package:social_app/style/app_color.dart';
 
 class CreatePostPage extends StatefulWidget {
   const CreatePostPage({super.key});
@@ -23,16 +24,30 @@ class _CreatePostPageState extends State<CreatePostPage> {
   final _selectedImages = <File>[];
   final _picker = ImagePicker();
 
+  final _presetTags = [
+    'photography',
+    'ui design',
+    'illustration',
+    'travel',
+    'street style',
+    'daily life',
+    'food & coffee',
+    'event & festival',
+  ];
+  final Set<String> _chosenTags = {};
+
   Future<void> _pickImages() async {
     final images = await _picker.pickMultiImage();
     if (images.isNotEmpty) {
-      setState(() {
-        _selectedImages.addAll(images.map((x) => File(x.path)));
-      });
+      setState(() => _selectedImages.addAll(images.map((x) => File(x.path))));
     }
   }
 
   void _removeImage(int i) => setState(() => _selectedImages.removeAt(i));
+
+  List<String> _collectHashtags() {
+    return _chosenTags.toList();
+  }
 
   void _submit() {
     final caption = _captionController.text.trim();
@@ -50,6 +65,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
         caption: caption,
         images: _selectedImages,
         userId: uid,
+        hashtags: _collectHashtags(),
       ),
     );
   }
@@ -61,6 +77,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
         if (state is PostSuccess) {
           _captionController.clear();
           _selectedImages.clear();
+          _chosenTags.clear();
           Navigator.pop(context);
           ScaffoldMessenger.of(
             context,
@@ -94,7 +111,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 Row(
                   children: [
                     AssetsManager.showImage(
-                      'https://avatar.iran.liara.run/public',
+                      'assets/images/avatar1.jpg',
                       height: 40,
                       width: 40,
                       fit: BoxFit.cover,
@@ -117,6 +134,40 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   ),
                   maxLines: null,
                 ),
+
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 6,
+                  children:
+                      _presetTags.map((tag) {
+                        final selected = _chosenTags.contains(tag);
+                        return ChoiceChip(
+                          label: Text('#$tag'),
+                          selected: selected,
+                          selectedColor: AppColors.startGradient,
+                          backgroundColor: AppColors.endGradient,
+                          labelStyle: TextStyle(color: Colors.white),
+
+                          onSelected:
+                              (val) => setState(() {
+                                val
+                                    ? _chosenTags.add(tag)
+                                    : _chosenTags.remove(tag);
+                              }),
+                        );
+                      }).toList(),
+                ),
+                if (_chosenTags.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    children:
+                        _chosenTags
+                            .map((t) => GradientText(text: '#$t', fontSize: 16))
+                            .toList(),
+                  ),
+                ],
+
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
@@ -156,7 +207,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
-                  height: 70,
+                  height: 55,
                   width: 150,
                   child: CustomButton(text: 'Chọn ảnh', onPressed: _pickImages),
                 ),

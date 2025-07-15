@@ -22,7 +22,6 @@ import 'package:social_app/app/pages/splash/splash_screen.dart';
 import 'package:social_app/app/pages/widget_tree.dart';
 import 'package:social_app/data/repositories/dynamic_link_handler.dart';
 import 'package:social_app/di.dart';
-import 'package:social_app/domain/entity/post.dart';
 
 class AppRouter {
   AppRouter._();
@@ -87,14 +86,8 @@ class AppRouter {
       GoRoute(
         path: '/view-post',
         builder: (_, state) {
-          final args = state.extra as Map<String, dynamic>?;
-          final post = args?['post'] as PostEntity?;
-          if (post == null) {
-            return const Scaffold(
-              body: Center(child: Text('Error: No post data provided')),
-            );
-          }
-          return ViewDetailPostPage(post: post);
+          final id = state.extra as String;
+          return ViewDetailPostPage(postId: id);
         },
       ),
     ],

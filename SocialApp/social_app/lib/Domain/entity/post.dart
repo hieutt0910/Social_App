@@ -1,5 +1,3 @@
-
-
 import 'package:equatable/equatable.dart';
 
 class PostEntity extends Equatable {
@@ -10,7 +8,8 @@ class PostEntity extends Equatable {
   final DateTime createdAt;
   final List<String> likedBy;
   final int commentsCount;
-
+  final List<String> hashtags;
+   final int viewsCount; 
   const PostEntity({
     required this.id,
     required this.userId,
@@ -19,6 +18,8 @@ class PostEntity extends Equatable {
     required this.createdAt,
     required this.likedBy,
     required this.commentsCount,
+    this.hashtags = const [],
+    this.viewsCount = 0, 
   });
 
   int get likesCount => likedBy.length;
@@ -29,6 +30,8 @@ class PostEntity extends Equatable {
     List<String>? imageUrls,
     List<String>? likedBy,
     int? commentsCount,
+    List<String>? hashtags,
+    int? viewsCount,
   }) {
     return PostEntity(
       id: id,
@@ -38,6 +41,8 @@ class PostEntity extends Equatable {
       createdAt: createdAt,
       likedBy: likedBy ?? this.likedBy,
       commentsCount: commentsCount ?? this.commentsCount,
+      hashtags: hashtags ?? this.hashtags,
+      viewsCount: viewsCount ?? this.viewsCount,
     );
   }
 
@@ -50,5 +55,7 @@ class PostEntity extends Equatable {
     createdAt,
     likedBy,
     commentsCount,
+    hashtags,
+    viewsCount, 
   ];
 }
