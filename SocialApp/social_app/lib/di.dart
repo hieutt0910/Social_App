@@ -1,5 +1,11 @@
 import 'package:get_it/get_it.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:social_app/app/bloc/changespw/changepw_bloc.dart';
+import 'package:social_app/app/bloc/forgotpassword/forgotpw_bloc.dart';
+import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
+import 'package:social_app/app/bloc/signin/signin_bloc.dart';
+import 'package:social_app/app/bloc/signup/signup_bloc.dart';
+import 'package:social_app/app/bloc/verify/verify_bloc.dart';
 import 'package:social_app/data/datasources/firebase/post_remote_data_source_impl.dart';
 
 import 'package:social_app/data/datasources/post_remote_data_source.dart';
@@ -45,5 +51,24 @@ Future<void> initDI() async {
       deletePost: sl(),
       incrementView: sl(),
     ),
+  );
+  // Đăng ký các BLoC cho Authentication
+  sl.registerFactory(() => SignInBloc());
+  sl.registerFactory(() => SignUpBloc());
+  sl.registerFactory(() => ForgotPasswordBloc());
+  sl.registerFactory(() => ChangePasswordBloc());
+
+
+  // Đăng ký VerifyBloc với tham số email và fromRoute
+  sl.registerFactoryParam<VerifyBloc, String, String>(
+        (email, fromRoute) => VerifyBloc(
+      email: email ?? '',
+      fromRoute: fromRoute ?? '',
+    ),
+  );
+
+  // Đăng ký SetNewPasswordBloc với tham số email
+  sl.registerFactoryParam<SetNewPasswordBloc, String, void>(
+        (email, _) => SetNewPasswordBloc(email: email ?? ''),
   );
 }

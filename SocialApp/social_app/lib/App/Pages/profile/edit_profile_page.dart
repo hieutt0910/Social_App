@@ -8,6 +8,7 @@ import '../../../Data/model/user.dart';
 import '../../Widgets/button.dart';
 import '../../Widgets/text.dart';
 import '../../Widgets/textfield.dart';
+import '../../utils/image_base64.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -19,6 +20,7 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _instagramController = TextEditingController();
   final TextEditingController _twitterController = TextEditingController();
@@ -44,6 +46,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _user = appUser;
           _nameController.text = appUser.name;
           _lastNameController.text = appUser.lastName;
+          _locationController.text = appUser.location ?? '';
           _emailController.text = appUser.email;
           _instagramController.text = appUser.instagram ?? '';
           _twitterController.text = appUser.twitter ?? '';
@@ -70,28 +73,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         _base64Image = base64String;
       });
     }
-  }
-
-  // Hàm kiểm tra xem chuỗi có phải là base64 hợp lệ
-  bool _isBase64(String? str) {
-    if (str == null || str.isEmpty) return false;
-    try {
-      base64Decode(str);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // Hàm lấy ImageProvider cho ảnh đại diện
-  ImageProvider _getImageProvider(String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return const AssetImage('assets/images/img_10.png');
-    }
-    if (_isBase64(imageUrl)) {
-      return MemoryImage(base64Decode(imageUrl));
-    }
-    return NetworkImage(imageUrl);
   }
 
   Future<void> _saveChanges() async {
@@ -135,6 +116,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       await _user!.updateInFirestore(
         name: _nameController.text.trim(),
         lastName: _lastNameController.text.trim(),
+        location: _locationController.text.trim(),
         imageUrl: _base64Image,
         instagram: instagram,
         twitter: twitter,
@@ -160,6 +142,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     _nameController.dispose();
     _lastNameController.dispose();
+    _locationController.dispose();
     _emailController.dispose();
     _instagramController.dispose();
     _twitterController.dispose();
@@ -225,7 +208,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           radius: 50,
                           backgroundImage: _selectedImage != null
                               ? FileImage(_selectedImage!)
-                              : _getImageProvider(_user?.imageUrl),
+                              : ImageUtils.getImageProvider(_user?.imageUrl),
                         ),
                       ),
                       Positioned(
@@ -274,6 +257,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     CustomInputField(
                       hintText: "Last Name",
                       controller: _lastNameController,
+                    ),
+                    const SizedBox(height: 18),
+                    FormLabel(text: 'Location'),
+                    CustomInputField(
+                      hintText: "Location",
+                      controller: _locationController,
                     ),
                     const SizedBox(height: 18),
                     FormLabel(text: 'Email'),
