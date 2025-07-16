@@ -61,4 +61,3 @@ class _HashtagPostsPageState extends State<HashtagPostsPage> {
   }
 }
 
-class PostFilterChanged {}

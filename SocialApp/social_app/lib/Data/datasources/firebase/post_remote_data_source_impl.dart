@@ -103,4 +103,10 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
                   .toList(),
         );
   }
+
+  @override
+  Future<void> updatePost(PostEntity post) async {
+    final model = PostModel.fromEntity(post);
+    await _firestore.collection('posts').doc(post.id).update(model.toMap());
+  }
 }
