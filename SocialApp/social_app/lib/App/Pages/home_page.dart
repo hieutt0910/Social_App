@@ -3,6 +3,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:social_app/App/Widgets/search_bar_widget.dart';
 import 'package:social_app/app/widgets/feed_tab.dart';
 import 'package:social_app/app/widgets/gradient_tab.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:social_app/app/bloc/post/post_bloc.dart';
+import 'package:social_app/app/bloc/post/post_event.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
   final List<String> tabTitles = ['Popular', 'Trending', 'Following'];
@@ -21,13 +25,29 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     _tabController = TabController(length: tabTitles.length, vsync: this);
+
+    WidgetsBinding.instance.addObserver(this);
+    _fetchPosts();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _fetchPosts();
+    }
+  }
+
+  void _fetchPosts() {
+    context.read<PostBloc>().add(PostFetchRequested());
   }
 
   @override

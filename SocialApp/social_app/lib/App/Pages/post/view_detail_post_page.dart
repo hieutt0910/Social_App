@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
@@ -29,6 +30,8 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
   @override
   void initState() {
     super.initState();
+    timeago.setLocaleMessages('vi', timeago.ViMessages());
+
     _commentController =
         TextEditingController()..addListener(
           () => setState(() => _isTexting = _commentController.text.isNotEmpty),
@@ -65,7 +68,6 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
     );
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar() => AppBar(
     backgroundColor: Colors.white,
     elevation: 0,
@@ -86,11 +88,9 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
     ],
   );
 
-  // ────────────────────────────────────────────────────────────────────────────
   Widget _buildBody(BuildContext context, PostEntity post) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    final createdText = timeago.format(post.createdAt, locale: 'en_short');
-
+    final createdText = timeago.format(post.createdAt, locale: 'vi');
     return Column(
       children: [
         Expanded(
@@ -133,6 +133,16 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
                           ],
                         ),
                       ),
+                      if (currentUid != null && currentUid == post.userId)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.more_vert,
+                            color: Colors.black,
+                          ),
+                          onPressed: () {
+                            _showPostOptions(context, post);
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -184,9 +194,12 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
                           const SizedBox(width: 4),
                           GestureDetector(
                             onTap: () {
-                              context.read<PostBloc>().add(
-                                PostToggleLikeRequested(post, currentUid!),
-                              );
+                              if (currentUid != null) {
+                                // Đảm bảo currentUid không null
+                                context.read<PostBloc>().add(
+                                  PostToggleLikeRequested(post, currentUid),
+                                );
+                              }
                             },
                             child:
                                 post.isLikedBy(currentUid ?? '')
@@ -273,6 +286,69 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showPostOptions(BuildContext context, PostEntity post) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Chỉnh sửa bài viết'),
+                onTap: () {
+                  context.pop(); 
+                  context.push('/edit-post', extra: post);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  'Xóa bài viết',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+
+                  _showDeleteConfirmationDialog(context, post);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, PostEntity post) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Xác nhận xóa'),
+          content: const Text('Bạn có chắc chắn muốn xóa bài viết này không? '),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () {
+                context.pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                context.pop();
+
+                context.read<PostBloc>().add(PostDeleteRequested(post.id));
+                context.pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

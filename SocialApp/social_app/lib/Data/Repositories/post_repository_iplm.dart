@@ -35,4 +35,9 @@ class PostRepositoryImpl implements PostRepository {
   
   @override
   Stream<List<PostEntity>> getPostsByHashtag(String hashtag) => remote.getPostsByHashtag(hashtag);
+  
+  @override
+  Future<void> updatePost(PostEntity post) {
+    return remote.updatePost(post);
+  }
 }

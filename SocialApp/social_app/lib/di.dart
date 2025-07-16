@@ -21,6 +21,7 @@ import 'package:social_app/domain/usecase/post/increment_view_usecase.dart';
 import 'package:social_app/domain/usecase/post/toggle_like_post.dart';
 
 import 'package:social_app/app/bloc/post/post_bloc.dart';
+import 'package:social_app/domain/usecase/post/update_post.dart';
 
 final sl = GetIt.instance;
 
@@ -41,10 +42,12 @@ Future<void> initDI() async {
   sl.registerLazySingleton(() => ToggleLikeUseCase(sl()));
   sl.registerLazySingleton(() => DeletePostUseCase(sl()));
   sl.registerLazySingleton(() => IncrementViewUseCase(sl()));
+  sl.registerLazySingleton(() => UpdatePostUseCase(sl()));
 
   sl.registerFactory(
     () => PostBloc(
       createPost: sl(),
+      updatePost: sl(),
       getPosts: sl(),
       getByHashtag: sl(),
       toggleLike: sl(),

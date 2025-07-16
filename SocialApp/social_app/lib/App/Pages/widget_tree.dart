@@ -6,6 +6,11 @@ import 'package:social_app/App/pages/profile/profile_screen.dart';
 import 'package:social_app/App/Widgets/bottom_navigation.dart';
 import 'package:social_app/App/Widgets/navbar_icon.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:social_app/app/bloc/post/post_bloc.dart';
+import 'package:social_app/app/bloc/post/post_event.dart';
+
 class WidgetTree extends StatefulWidget {
   const WidgetTree({super.key});
 
@@ -22,6 +27,11 @@ class _WidgetTreeState extends State<WidgetTree> {
     Center(child: Text('Trang 3')),
     AccountPage(),
   ];
+  @override
+  void initState() {
+    _pageIndex = 0;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +69,14 @@ class _WidgetTreeState extends State<WidgetTree> {
       ),
       bottomNavigationBar: CustomBottomNav(
         selectedIndex: _pageIndex,
-        onItemTapped: (index) => setState(() => _pageIndex = index),
+        onItemTapped: (index) {
+          setState(() {
+            _pageIndex = index;
+          });
+          if (index == 0) {
+            context.read<PostBloc>().add(PostFetchRequested());
+          }
+        },
       ),
       extendBody: true,
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:social_app/app/widgets/search_bar_with_cancel.dart';
 import 'package:social_app/app/widgets/topic_card.dart';
 
@@ -22,11 +23,7 @@ class SearchTopic extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 0,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
+      appBar: AppBar(elevation: 0, backgroundColor: Colors.transparent),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
         child: Column(
@@ -39,11 +36,18 @@ class SearchTopic extends StatelessWidget {
                 itemBuilder:
                     (context, index) => Padding(
                       padding: const EdgeInsets.only(bottom: 14),
-                      child: TopicCard(
-                        imagePath: imageTopicPaths[index],
-                        overlayImagePath: "assets/images/card-background.jpg",
-                        title: titlesTopic[index],
-                        alignLeft: index.isEven,
+                      child: GestureDetector(
+                        onTap:
+                            () => context.push(
+                              '/hashtag-posts',
+                              extra: titlesTopic[index].toLowerCase(),
+                            ),
+                        child: TopicCard(
+                          imagePath: imageTopicPaths[index],
+                          overlayImagePath: "assets/images/card-background.jpg",
+                          title: titlesTopic[index],
+                          alignLeft: index.isEven,
+                        ),
                       ),
                     ),
               ),

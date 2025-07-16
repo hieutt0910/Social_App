@@ -9,6 +9,7 @@ import 'package:social_app/domain/usecase/post/get_post.dart';
 import 'package:social_app/domain/usecase/post/get_post_by_hashtag.dart';
 import 'package:social_app/domain/usecase/post/increment_view_usecase.dart';
 import 'package:social_app/domain/usecase/post/toggle_like_post.dart';
+import 'package:social_app/domain/usecase/post/update_post.dart';
 
 class PostBloc extends Bloc<PostEvent, PostState> {
   final CreatePostUseCase _createPost;
@@ -17,24 +18,27 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   final ToggleLikeUseCase _toggleLike;
   final DeletePostUseCase _deletePost;
   final IncrementViewUseCase _incrementView;
-
+  final UpdatePostUseCase _updatePost;
   StreamSubscription<List<PostEntity>>? _postsSub;
 
   PostBloc({
     required CreatePostUseCase createPost,
+    required UpdatePostUseCase updatePost,
     required GetPostsUseCase getPosts,
     required GetPostsByHashtagUseCase getByHashtag,
     required ToggleLikeUseCase toggleLike,
     required DeletePostUseCase deletePost,
     required IncrementViewUseCase incrementView,
-  })  : _createPost = createPost,
-        _getPosts = getPosts,
-        _getByHashtag = getByHashtag,
-        _toggleLike = toggleLike,
-        _deletePost = deletePost,
-        _incrementView = incrementView,
-        super(PostInitial()) {
+  }) : _createPost = createPost,
+       _updatePost = updatePost,
+       _getPosts = getPosts,
+       _getByHashtag = getByHashtag,
+       _toggleLike = toggleLike,
+       _deletePost = deletePost,
+       _incrementView = incrementView,
+       super(PostInitial()) {
     on<PostCreateRequested>(_onCreate);
+    on<PostEditRequested>(_onEdit);
     on<PostDeleteRequested>(_onDelete);
     on<PostToggleLikeRequested>(_onToggleLike);
     on<PostViewIncreaseRequested>(_onIncreaseView);
@@ -52,12 +56,18 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     );
   }
 
-  Future<void> _onFetchAll(PostFetchRequested e, Emitter<PostState> emit) async {
+  Future<void> _onFetchAll(
+    PostFetchRequested e,
+    Emitter<PostState> emit,
+  ) async {
     emit(PostLoading());
     _listen(_getPosts());
   }
 
-  Future<void> _onFetchByHashtag(PostByHashtagRequested e, Emitter<PostState> emit) async {
+  Future<void> _onFetchByHashtag(
+    PostByHashtagRequested e,
+    Emitter<PostState> emit,
+  ) async {
     emit(PostLoading());
     _listen(_getByHashtag(e.hashtag));
   }
@@ -81,16 +91,20 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _onToggleLike(PostToggleLikeRequested e, Emitter<PostState> emit) async {
+  Future<void> _onToggleLike(
+    PostToggleLikeRequested e,
+    Emitter<PostState> emit,
+  ) async {
     final current = state;
     if (current is! PostListLoaded) return;
 
-    final updated = current.posts.map((p) {
-      if (p.id != e.post.id) return p;
-      return e.post.isLikedBy(e.userId)
-          ? p.copyWith(likedBy: List.from(p.likedBy)..remove(e.userId))
-          : p.copyWith(likedBy: List.from(p.likedBy)..add(e.userId));
-    }).toList();
+    final updated =
+        current.posts.map((p) {
+          if (p.id != e.post.id) return p;
+          return e.post.isLikedBy(e.userId)
+              ? p.copyWith(likedBy: List.from(p.likedBy)..remove(e.userId))
+              : p.copyWith(likedBy: List.from(p.likedBy)..add(e.userId));
+        }).toList();
 
     emit(PostListLoaded(updated));
 
@@ -110,11 +124,35 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _onIncreaseView(PostViewIncreaseRequested e, Emitter<PostState> emit) async {
+  Future<void> _onIncreaseView(
+    PostViewIncreaseRequested e,
+    Emitter<PostState> emit,
+  ) async {
     try {
       await _incrementView(e.postId);
     } catch (err) {
       emit(PostFailure(err.toString()));
+    }
+  }
+
+  Future<void> _onEdit(PostEditRequested e, Emitter<PostState> emit) async {
+    final current = state;
+    if (current is! PostListLoaded) return;
+
+    emit(PostLoading());
+
+    try {
+      await _updatePost(e.updatedPost);
+
+      final updatedList =
+          current.posts.map((p) {
+            return p.id == e.updatedPost.id ? e.updatedPost : p;
+          }).toList();
+
+      emit(PostListLoaded(updatedList));
+    } catch (err) {
+      emit(PostFailure(err.toString()));
+      emit(current);
     }
   }
 
