@@ -6,6 +6,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import '../../../Data/model/collection.dart';
 import '../../../Data/model/user.dart';
+import '../../utils/image_base64.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -78,27 +79,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  // Hàm kiểm tra xem chuỗi có phải là base64 hợp lệ
-  bool _isBase64(String? str) {
-    if (str == null || str.isEmpty) return false;
-    try {
-      base64Decode(str);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // Hàm lấy ImageProvider cho ảnh đại diện
-  ImageProvider _getImageProvider(String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return const AssetImage('assets/images/avatar.jpg');
-    }
-    if (_isBase64(imageUrl)) {
-      return MemoryImage(base64Decode(imageUrl));
-    }
-    return NetworkImage(imageUrl);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +136,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundImage: _getImageProvider(_user?.imageUrl),
+                    backgroundImage: ImageUtils.getImageProvider(_user?.imageUrl),
                   ),
                 ),
               ),
@@ -178,9 +158,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    "Da Nang, Vietnam",
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  Text(
+                    (_user?.location ?? 'Unknown Location').trim(),
+                    style: const TextStyle(color: Colors.grey, fontSize: 16),
                   ),
 
                   const SizedBox(height: 20),

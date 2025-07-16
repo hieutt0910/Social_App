@@ -5,7 +5,6 @@ import 'package:social_app/app/bloc/forgotpassword/forgotpw_bloc.dart';
 import 'package:social_app/app/bloc/signin/signin_bloc.dart';
 import 'package:social_app/app/bloc/signup/signup_bloc.dart';
 import 'package:social_app/app/bloc/post/post_bloc.dart';
-
 import 'package:social_app/app/routes/app_routes.dart';
 import 'package:social_app/di.dart';
 import 'package:social_app/data/repositories/dynamic_link_handler.dart';

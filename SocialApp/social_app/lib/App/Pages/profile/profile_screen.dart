@@ -1,10 +1,10 @@
 import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import '../../../Data/model/user.dart';
+import '../../utils/image_base64.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -34,28 +34,7 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
-  // Hàm kiểm tra xem chuỗi có phải là base64 hợp lệ
-  bool _isBase64(String? str) {
-    if (str == null || str.isEmpty) return false;
-    try {
-      base64Decode(str);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
 
-  // Hàm lấy ImageProvider cho ảnh đại diện
-  ImageProvider _getImageProvider(String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return const AssetImage('assets/images/avatar.jpg');
-    }
-    if (_isBase64(imageUrl)) {
-      return MemoryImage(base64Decode(imageUrl));
-    }
-    // Nếu là URL (như từ Google), dùng NetworkImage
-    return NetworkImage(imageUrl);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +68,7 @@ class _AccountPageState extends State<AccountPage> {
                           },
                           child: CircleAvatar(
                             radius: 32,
-                            backgroundImage: _getImageProvider(_user?.imageUrl),
+                            backgroundImage: ImageUtils.getImageProvider(_user?.imageUrl),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -152,7 +131,7 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 16),
                 Padding(
-                  padding: const EdgeInsets.only(left: 36, bottom: 80),
+                  padding: const EdgeInsets.only(left: 16, bottom: 30),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: ElevatedButton.icon(
@@ -215,8 +194,63 @@ class _AccountPageState extends State<AccountPage> {
               height: 30,
               color: Colors.white,
             ),
-            onTap: () {
-              context.push(routeName);
+            onTap: () async {
+              String? url;
+              switch (label) {
+                case "Paypal":
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Paypal has not been set up')),
+                  );
+                  break;
+                case "About i.click":
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Social App - Connect and share with your community')),
+                  );
+                  break;
+                case "Instagram":
+                  if (_user?.instagram != null && _user!.instagram!.isNotEmpty) {
+                    String igHandle = _user!.instagram!.startsWith('@')
+                        ? _user!.instagram!.substring(1)
+                        : _user!.instagram!;
+                    url = 'https://www.instagram.com/$igHandle';
+                    String deepLink = 'instagram://user?username=$igHandle';
+                    if (await canLaunchUrl(Uri.parse(deepLink))) {
+                      await launchUrl(Uri.parse(deepLink), mode: LaunchMode.externalApplication);
+                    } else {
+                      await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+                    }
+                  }
+                  break;
+                case "Twitter":
+                  if (_user?.twitter != null && _user!.twitter!.isNotEmpty) {
+                    String twitterHandle = _user!.twitter!.startsWith('@')
+                        ? _user!.twitter!.substring(1)
+                        : _user!.twitter!;
+                    url = 'https://x.com/$twitterHandle';
+                    String deepLink = 'twitter://user?screen_name=$twitterHandle';
+                    if (await canLaunchUrl(Uri.parse(deepLink))) {
+                      await launchUrl(Uri.parse(deepLink), mode: LaunchMode.externalApplication);
+                    } else {
+                      await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+                    }
+                  }
+                  break;
+                case "Website":
+                  if (_user?.website != null && _user!.website!.isNotEmpty) {
+                    url = _user!.website!;
+                    await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+                  }
+                  break;
+                case "Terms & privacy":
+                  if (_user?.terms != null && _user!.terms!.isNotEmpty) {
+                    url = _user!.terms!;
+                    await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+                  }
+                  break;
+                default:
+                  context.push(routeName);
+                  return;
+              }
             },
           ),
         ),

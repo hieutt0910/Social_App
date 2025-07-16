@@ -25,6 +25,9 @@ import 'package:social_app/data/repositories/dynamic_link_handler.dart';
 import 'package:social_app/di.dart';
 import 'package:social_app/domain/entity/post.dart';
 
+import '../bloc/changespw/changepw_bloc.dart';
+import '../bloc/changespw/changepw_ui.dart';
+
 class AppRouter {
   AppRouter._();
 
@@ -60,6 +63,15 @@ class AppRouter {
           return BlocProvider(
             create: (_) => sl<SetNewPasswordBloc>(param1: email),
             child: SetNewPasswordPage(email: email),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (_, __) {
+          return BlocProvider(
+            create: (_) => sl<ChangePasswordBloc>(),
+            child: const ChangePasswordPage(),
           );
         },
       ),

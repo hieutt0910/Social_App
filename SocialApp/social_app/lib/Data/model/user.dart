@@ -5,6 +5,7 @@ class AppUser {
   final String email;
   String name;
   String lastName;
+  String location;
   String? imageUrl;
   String? instagram;
   String? twitter;
@@ -16,6 +17,7 @@ class AppUser {
     required this.email,
     this.name = 'Unknown',
     this.lastName = '',
+    this.location = '',
     this.imageUrl,
     this.instagram,
     this.twitter,
@@ -29,6 +31,7 @@ class AppUser {
       email: data['email'] ?? '',
       name: data['name'] ?? 'Unknown',
       lastName: data['lastName'] ?? '',
+      location: data['location'] ?? '',
       imageUrl: data['imageUrl'],
       instagram: data['instagram'],
       twitter: data['twitter'],
@@ -43,6 +46,7 @@ class AppUser {
       'email': email,
       'name': name,
       'lastName': lastName,
+      'location': location,
       'imageUrl': imageUrl,
       'instagram': instagram,
       'twitter': twitter,
@@ -80,6 +84,7 @@ class AppUser {
   Future<void> updateInFirestore({
     String? name,
     String? lastName,
+    String? location,
     String? imageUrl,
     String? instagram,
     String? twitter,
@@ -94,6 +99,10 @@ class AppUser {
     if (lastName != null) {
       this.lastName = lastName;
       updates['lastName'] = lastName;
+    }
+    if (location != null) {
+      this.location = location;
+      updates['location'] = location;
     }
     if (imageUrl != null) {
       this.imageUrl = imageUrl;
