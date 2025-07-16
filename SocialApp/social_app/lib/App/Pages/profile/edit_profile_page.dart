@@ -85,7 +85,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       String instagram = _instagramController.text.trim();
       if (instagram.isNotEmpty) {
         if (instagram.contains('instagram.com/')) {
-          // Trích xuất username từ URL (ví dụ: https://www.instagram.com/username/)
           final uri = Uri.parse(instagram);
           instagram = '@${uri.pathSegments.last}';
         } else if (!instagram.startsWith('@')) {
@@ -96,7 +95,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       String twitter = _twitterController.text.trim();
       if (twitter.isNotEmpty) {
         if (twitter.contains('twitter.com/') || twitter.contains('x.com/')) {
-          // Trích xuất username từ URL (ví dụ: https://twitter.com/username hoặc https://x.com/username)
           final uri = Uri.parse(twitter);
           twitter = '@${uri.pathSegments.last}';
         } else if (!twitter.startsWith('@')) {
