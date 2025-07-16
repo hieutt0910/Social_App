@@ -85,7 +85,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
           _captionController.clear();
           _selectedImages.clear();
           _chosenTags.clear();
-          context.go('/widget-tree');
+          context.read<PostBloc>().add(const PostFetchRequested());
+          context.pop();
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Đã đăng bài viết')));
@@ -122,6 +123,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                       height: 40,
                       width: 40,
                       fit: BoxFit.cover,
+                      isCircle: true,
                     ),
                     const SizedBox(width: 14),
                     const Text(
@@ -141,7 +143,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   ),
                   maxLines: null,
                 ),
-
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 6,

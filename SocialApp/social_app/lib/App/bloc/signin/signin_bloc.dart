@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,7 +15,9 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
   }
 
   Future<void> _onSignInWithEmail(
-      SignInWithEmailEvent event, Emitter<SignInState> emit) async {
+    SignInWithEmailEvent event,
+    Emitter<SignInState> emit,
+  ) async {
     if (state is SignInLoading) return;
     emit(SignInLoading());
 
@@ -34,12 +37,14 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
       await prefs.setString('temp_password', event.password);
 
       final userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: event.email, password: event.password);
+          .signInWithEmailAndPassword(
+            email: event.email,
+            password: event.password,
+          );
 
       if (userCredential.user != null) {
         // Kiểm tra xem người dùng đã có tài liệu trong Firestore chưa
         await AppUser.getFromFirestore(userCredential.user!.uid);
-
 
         await DynamicLinksHandler.sendSignInLink(event.email);
         emit(SignInSuccess());
@@ -63,7 +68,9 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
   }
 
   Future<void> _onSignInWithGoogle(
-      SignInWithGoogleEvent event, Emitter<SignInState> emit) async {
+    SignInWithGoogleEvent event,
+    Emitter<SignInState> emit,
+  ) async {
     if (state is SignInLoading) return;
     emit(SignInLoading());
 
@@ -75,14 +82,15 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
       final User? user = userCredential.user;
 
       if (user != null) {
@@ -99,6 +107,7 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
       }
     } catch (e) {
       emit(SignInFailure('Lỗi khi đăng nhập bằng Google: $e'));
+      debugPrint(e.toString());
     }
   }
 }

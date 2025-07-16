@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:social_app/Data/model/collection.dart';
 import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
 import 'package:social_app/app/bloc/verify/verify_bloc.dart';
-import 'package:social_app/app/pages/Selection/category_screen.dart';
+import 'package:social_app/app/pages/post/edit_post_page.dart';
+import 'package:social_app/app/pages/selection/category_screen.dart';
 import 'package:social_app/app/pages/auth/forgot_password.dart';
 import 'package:social_app/app/pages/auth/set_new_password_screen.dart';
 import 'package:social_app/app/pages/auth/signin_screen.dart';
@@ -22,6 +23,7 @@ import 'package:social_app/app/pages/splash/splash_screen.dart';
 import 'package:social_app/app/pages/widget_tree.dart';
 import 'package:social_app/data/repositories/dynamic_link_handler.dart';
 import 'package:social_app/di.dart';
+import 'package:social_app/domain/entity/post.dart';
 
 import '../bloc/changespw/changepw_bloc.dart';
 import '../bloc/changespw/changepw_ui.dart';
@@ -108,6 +110,14 @@ class AppRouter {
           return ViewDetailPostPage(postId: id);
         },
       ),
+      GoRoute(
+        path: '/edit-post',
+        builder: (context, state) {
+          final post = state.extra as PostEntity;
+          return EditPostPage(post: post);
+        },
+      ),
+
       GoRoute(
         path: '/hashtag-posts',
         builder: (_, state) {

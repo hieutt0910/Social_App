@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
+import 'package:social_app/data/model/user.dart';
 import 'package:social_app/domain/entity/post.dart';
 import 'package:social_app/style/app_text_style.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -14,6 +15,7 @@ class PostWidget extends StatelessWidget {
   final PostEntity post;
   final VoidCallback onLike;
   final VoidCallback onComment;
+
   const PostWidget({
     super.key,
     required this.post,
@@ -26,7 +28,7 @@ class PostWidget extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
     final String? currentUid = user?.uid;
     final uid = post.userId;
-    final createdText = timeago.format(post.createdAt, locale: 'en_short');
+    final createdText = timeago.format(post.createdAt, locale: 'vi');
 
     return GestureDetector(
       onTap: () {
@@ -43,36 +45,50 @@ class PostWidget extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-              child: Row(
-                children: [
-                  AssetsManager.showImage(
-                    'assets/images/avatar1.jpg',
-                    height: 30,
-                    width: 30,
-                    fit: BoxFit.cover,
-                    isCircle: true,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      uid,
-                      style: GoogleFonts.manrope(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+              child: FutureBuilder<AppUser?>(
+                future: AppUser.getFromFirestore(uid),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(); // hoặc CircularProgressIndicator()
+                  }
+
+                  if (!snapshot.hasData || snapshot.data == null) {
+                    return const Text("Không tìm thấy người dùng");
+                  }
+
+                  final userData = snapshot.data!;
+
+                  return Row(
+                    children: [
+                      AssetsManager.showImage(
+                        'assets/images/avatar1.jpg',
+                        height: 30,
+                        width: 30,
+                        fit: BoxFit.cover,
+                        isCircle: true,
                       ),
-                    ),
-                  ),
-                  Text(
-                    createdText,
-                    style: GoogleFonts.manrope(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          userData.name,
+                          style: GoogleFonts.manrope(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        createdText,
+                        style: GoogleFonts.manrope(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-
             if (post.imageUrls.isNotEmpty)
               AssetsManager.showImage(
                 post.imageUrls.first,
@@ -80,7 +96,6 @@ class PostWidget extends StatelessWidget {
                 fit: BoxFit.cover,
                 height: 230,
               ),
-
             if (post.caption.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -91,11 +106,9 @@ class PostWidget extends StatelessWidget {
                   post.caption,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-
                   style: AppTextStyles.bodyTextMediumBlack,
                 ),
               ),
-
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
               child: Row(
@@ -109,7 +122,6 @@ class PostWidget extends StatelessWidget {
                       height: 20,
                     ),
                   ),
-
                   Row(
                     children: [
                       Text(
@@ -134,7 +146,6 @@ class PostWidget extends StatelessWidget {
                         style: AppTextStyles.bodyTextMediumGrey,
                       ),
                       const SizedBox(width: 6),
-
                       GestureDetector(
                         onTap: () {
                           context.read<PostBloc>().add(
