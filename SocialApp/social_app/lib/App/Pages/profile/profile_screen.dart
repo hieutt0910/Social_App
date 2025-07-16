@@ -197,6 +197,16 @@ class _AccountPageState extends State<AccountPage> {
             onTap: () async {
               String? url;
               switch (label) {
+                case "Paypal":
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Paypal has not been set up')),
+                  );
+                  break;
+                case "About i.click":
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Social App - Connect and share with your community')),
+                  );
+                  break;
                 case "Instagram":
                   if (_user?.instagram != null && _user!.instagram!.isNotEmpty) {
                     String igHandle = _user!.instagram!.startsWith('@')
@@ -240,11 +250,6 @@ class _AccountPageState extends State<AccountPage> {
                 default:
                   context.push(routeName);
                   return;
-              }
-              if (url == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$label chưa được thiết lập')),
-                );
               }
             },
           ),
