@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 import 'package:social_app/domain/entity/post.dart';
 
@@ -19,11 +18,17 @@ class PostFailure extends PostState {
   List<Object?> get props => [message];
 }
 
-class PostSuccess extends PostState {}            
+class PostSuccess extends PostState {}
 
-class PostListLoaded extends PostState {          
+class PostListLoaded extends PostState {
   final List<PostEntity> posts;
   const PostListLoaded(this.posts);
   @override
   List<Object?> get props => [posts];
+}
+
+class PostSearchResultLoaded extends PostState {
+  final List<PostEntity> posts;
+
+  const PostSearchResultLoaded(this.posts);
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
+import 'package:social_app/Data/model/user.dart';
 
 import '../../../Data/model/collection.dart';
 
 class OtherUserProfilePage extends StatefulWidget {
-  const OtherUserProfilePage({super.key});
+  final AppUser user;
 
+  const OtherUserProfilePage({super.key, required this.user});
   @override
   State<OtherUserProfilePage> createState() => _UserProfilePageState();
 }
@@ -33,29 +35,19 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
     Collection(
       title: 'Your Likes',
       coverImage: 'assets/images/img_23.png',
-      images: [
-        'assets/images/img_19.png',
-        'assets/images/img_20.png',
-      ],
+      images: ['assets/images/img_19.png', 'assets/images/img_20.png'],
     ),
     Collection(
       title: 'Download',
       coverImage: 'assets/images/img_24.png',
-      images: [
-        'assets/images/img_21.png',
-        'assets/images/img_22.png',
-      ],
+      images: ['assets/images/img_21.png', 'assets/images/img_22.png'],
     ),
     Collection(
       title: 'Photography',
       coverImage: 'assets/images/img_25.png',
-      images: [
-        'assets/images/img_19.png',
-        'assets/images/img_20.png',
-      ],
+      images: ['assets/images/img_19.png', 'assets/images/img_20.png'],
     ),
   ];
-
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +82,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                 top: MediaQuery.of(context).padding.top + 35,
                 left: 0,
                 right: 0,
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '@brunopham',
-                    style: TextStyle(
+                    widget.user.email,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -105,7 +97,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                 top: MediaQuery.of(context).padding.top + 28,
                 right: 16,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
@@ -141,9 +136,9 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  const Text(
-                    "Bruno Pham",
-                    style: TextStyle(
+                  Text(
+                    widget.user.name,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 22,
                     ),
@@ -151,7 +146,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                   const SizedBox(height: 4),
                   const Text(
                     "Da Nang, Vietnam",
-                    style: TextStyle(color: Colors.grey,fontSize: 16),
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
 
                   const SizedBox(height: 20),
@@ -167,13 +162,31 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Text("220", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16)),
+                        Text(
+                          "220",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                         SizedBox(width: 4),
-                        Text("Followers", style: TextStyle(color: Colors.grey,fontSize: 16)),
+                        Text(
+                          "Followers",
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
                         SizedBox(width: 48),
-                        Text("150", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16)),
+                        Text(
+                          "150",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                         SizedBox(width: 4),
-                        Text("Following", style: TextStyle(color: Colors.grey,fontSize: 16)),
+                        Text(
+                          "Following",
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
                       ],
                     ),
                   ),
@@ -183,7 +196,9 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                   // Social Icons + Dot
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(socialIcons.length * 2 - 1, (index) {
+                    children: List.generate(socialIcons.length * 2 - 1, (
+                      index,
+                    ) {
                       if (index.isEven) {
                         final iconIndex = index ~/ 2;
                         return Image.asset(
@@ -218,7 +233,8 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                     child: Row(
                       children: List.generate(tabs.length, (index) {
                         final isSelected = selectedTab == index;
-                        final count = index == 0 ? shotImages.length : collections.length;
+                        final count =
+                            index == 0 ? shotImages.length : collections.length;
 
                         return Expanded(
                           child: GestureDetector(
@@ -230,7 +246,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFFF1F1FE) : Colors.transparent,
+                                color:
+                                    isSelected
+                                        ? const Color(0xFFF1F1FE)
+                                        : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
@@ -239,9 +258,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color: isSelected
-                                        ? const Color(0xFF6A6BF4)
-                                        : const Color(0xFFB8B8B8),
+                                    color:
+                                        isSelected
+                                            ? const Color(0xFF6A6BF4)
+                                            : const Color(0xFFB8B8B8),
                                   ),
                                 ),
                               ),
@@ -272,11 +292,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
   Widget _buildGridOrEmpty(List<String> images) {
     if (images.isEmpty) {
       return Center(
-        child: Image.asset(
-          'assets/images/img_18.png',
-          width: 200,
-          height: 200,
-        ),
+        child: Image.asset('assets/images/img_18.png', width: 200, height: 200),
       );
     }
 
@@ -290,14 +306,12 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
       itemBuilder: (context, index) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.asset(
-            images[index],
-            fit: BoxFit.cover,
-          ),
+          child: Image.asset(images[index], fit: BoxFit.cover),
         );
       },
     );
   }
+
   Widget _buildCollections() {
     if (collections.isEmpty) {
       return Center(
@@ -318,50 +332,48 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
       itemBuilder: (context, index) {
         final collection = collections[index];
         return GestureDetector(
-            onTap: () {
-              context.push('/collection-detail', extra: collection);
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        collection.coverImage,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 166,
-                      ),
-                    ),
-                    Container(
+          onTap: () {
+            context.push('/collection-detail', extra: collection);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      collection.coverImage,
+                      fit: BoxFit.cover,
                       width: double.infinity,
                       height: 166,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                     ),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  '${collection.images.length} shots',
-                  style: const TextStyle(
-                    color: Color(0xFF8E8E93),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
-                ),
-              ],
-            )
+                  Container(
+                    width: double.infinity,
+                    height: 166,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ],
+              ),
 
+              const SizedBox(height: 8),
+
+              Text(
+                '${collection.images.length} shots',
+                style: const TextStyle(
+                  color: Color(0xFF8E8E93),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
-
 }

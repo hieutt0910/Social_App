@@ -40,4 +40,5 @@ class PostRepositoryImpl implements PostRepository {
   Future<void> updatePost(PostEntity post) {
     return remote.updatePost(post);
   }
+ 
 }

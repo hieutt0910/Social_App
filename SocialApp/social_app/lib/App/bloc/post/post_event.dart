@@ -75,6 +75,7 @@ class PostByHashtagRequested extends PostEvent {
   final String hashtag;
   const PostByHashtagRequested(this.hashtag);
 }
+
 class PostEditRequested extends PostEvent {
   final PostEntity updatedPost;
 
@@ -82,4 +83,16 @@ class PostEditRequested extends PostEvent {
 
   @override
   List<Object?> get props => [updatedPost];
+}
+
+class PostSearchRequested extends PostEvent {
+  final String query;
+  final String currentTab; 
+  final String userId; 
+
+  const PostSearchRequested({
+    required this.query,
+    required this.currentTab,
+    required this.userId,
+  });
 }
