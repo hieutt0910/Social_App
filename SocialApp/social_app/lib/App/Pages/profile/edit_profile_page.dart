@@ -46,7 +46,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _user = appUser;
           _nameController.text = appUser.name;
           _lastNameController.text = appUser.lastName;
-          _locationController.text = appUser.location ?? '';
+          _locationController.text = appUser.location;
           _emailController.text = appUser.email;
           _instagramController.text = appUser.instagram ?? '';
           _twitterController.text = appUser.twitter ?? '';

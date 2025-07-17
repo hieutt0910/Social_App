@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,11 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
-import 'package:social_app/data/model/user.dart';
+import 'package:social_app/app/utils/assets_manage.dart';
+import 'package:social_app/Data/model/user.dart';
 import 'package:social_app/domain/entity/post.dart';
 import 'package:social_app/style/app_text_style.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:social_app/app/utils/assets_manage.dart';
 
 class PostWidget extends StatelessWidget {
   final PostEntity post;
@@ -49,7 +50,7 @@ class PostWidget extends StatelessWidget {
                 future: AppUser.getFromFirestore(uid),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox(); // hoặc CircularProgressIndicator()
+                    return const SizedBox(height: 30);
                   }
 
                   if (!snapshot.hasData || snapshot.data == null) {
@@ -60,12 +61,17 @@ class PostWidget extends StatelessWidget {
 
                   return Row(
                     children: [
-                      AssetsManager.showImage(
-                        'assets/images/avatar1.jpg',
-                        height: 30,
-                        width: 30,
-                        fit: BoxFit.cover,
-                        isCircle: true,
+                      GestureDetector(
+                        onTap:
+                            () =>
+                                context.push('/other-profile', extra: userData),
+                        child: AssetsManager.showImage(
+                          'assets/images/avatar1.jpg',
+                          height: 30,
+                          width: 30,
+                          fit: BoxFit.cover,
+                          isCircle: true,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -90,11 +96,14 @@ class PostWidget extends StatelessWidget {
               ),
             ),
             if (post.imageUrls.isNotEmpty)
-              AssetsManager.showImage(
-                post.imageUrls.first,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                height: 230,
+              Hero(
+                tag: post.imageUrls.first,
+                child: AssetsManager.showImage(
+                  post.imageUrls.first,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  height: 230,
+                ),
               ),
             if (post.caption.isNotEmpty)
               Padding(

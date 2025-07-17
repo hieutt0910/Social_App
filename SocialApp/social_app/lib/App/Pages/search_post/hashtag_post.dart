@@ -5,6 +5,8 @@ import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/bloc/post/post_state.dart';
 import 'package:social_app/app/widgets/post_widget.dart';
 
+import '../../../Data/model/user.dart';
+
 class HashtagPostsPage extends StatefulWidget {
   final String hashtag;
   const HashtagPostsPage({super.key, required this.hashtag});
@@ -46,12 +48,16 @@ class _HashtagPostsPageState extends State<HashtagPostsPage> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               itemCount: posts.length,
               separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder:
-                  (_, i) => PostWidget(
-                    post: posts[i],
-                    onLike: () {},
-                    onComment: () {},
-                  ),
+              itemBuilder: (_, i) {
+                AppUser user =
+                    AppUser.getFromFirestore(posts[i].userId) as AppUser;
+                PostWidget(
+                  post: posts[i],
+                  onLike: () {},
+                  onComment: () {},
+                );
+                return null;
+              },
             );
           }
           return const SizedBox.shrink();
@@ -60,4 +66,3 @@ class _HashtagPostsPageState extends State<HashtagPostsPage> {
     );
   }
 }
-

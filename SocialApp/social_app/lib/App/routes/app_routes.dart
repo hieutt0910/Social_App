@@ -85,10 +85,13 @@ class AppRouter {
         path: '/user-profile',
         builder: (_, __) => const UserProfilePage(),
       ),
-      // GoRoute(
-      //   path: '/other-profile',
-      //   builder: (_, __) => const OtherUserProfilePage(),
-      // ),
+      GoRoute(
+        path: '/other-profile',
+        builder: (context, state) {
+          final user = state.extra as AppUser;
+          return OtherUserProfilePage(user: user);
+        },
+      ),
       GoRoute(
         path: '/collection-detail',
         builder: (_, state) {
