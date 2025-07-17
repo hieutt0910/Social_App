@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_app/Data/model/collection.dart';
+import 'package:social_app/Data/model/user.dart';
 import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
 import 'package:social_app/app/bloc/verify/verify_bloc.dart';
 import 'package:social_app/app/pages/post/edit_post_page.dart';
@@ -87,7 +88,10 @@ class AppRouter {
       ),
       GoRoute(
         path: '/other-profile',
-        builder: (_, __) => const OtherUserProfilePage(),
+        builder: (context, state) {
+          final user = state.extra as AppUser;
+          return OtherUserProfilePage(user: user);
+        },
       ),
       GoRoute(
         path: '/collection-detail',
