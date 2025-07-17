@@ -118,7 +118,7 @@ class _AccountPageState extends State<AccountPage> {
                   child: ListView(
                     padding: const EdgeInsets.only(left: 0),
                     children: [
-                      _buildItem(context: context, label: "Email", routeName: '/other-profile'),
+                      _buildItem(context: context, label: "Email", routeName: '/email'),
                       _buildItem(context: context, label: "Instagram", routeName: '/instagram'),
                       _buildItem(context: context, label: "Twitter", routeName: '/twitter'),
                       _buildItem(context: context, label: "Website", routeName: '/website'),
@@ -197,6 +197,22 @@ class _AccountPageState extends State<AccountPage> {
             onTap: () async {
               String? url;
               switch (label) {
+                case "Email":
+                  if (_user?.email != null && _user!.email.isNotEmpty) {
+                    url = 'mailto:${_user!.email}';
+                    if (await canLaunchUrl(Uri.parse(url))) {
+                      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cannot launch email app')),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Email not available')),
+                    );
+                  }
+                  break;
                 case "Paypal":
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Paypal has not been set up')),

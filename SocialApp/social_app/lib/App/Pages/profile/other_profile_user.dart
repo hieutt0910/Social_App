@@ -1,53 +1,100 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_app/Data/model/user.dart';
-
-import '../../../Data/model/collection.dart';
+import 'package:social_app/Data/model/collection.dart';
+import 'package:social_app/Data/model/shot.dart';
+import '../../utils/image_base64.dart';
 
 class OtherUserProfilePage extends StatefulWidget {
   final AppUser user;
 
   const OtherUserProfilePage({super.key, required this.user});
+
   @override
   State<OtherUserProfilePage> createState() => _UserProfilePageState();
 }
 
 class _UserProfilePageState extends State<OtherUserProfilePage> {
   int selectedTab = 0;
+  List<Shot> shots = [];
+  List<Collection> collections = [];
+  bool isFollowing = false;
+  bool isLoading = false;
 
-  final List<String> tabs = ["shots", "Collections"];
-
+  final List<String> tabs = ["Shots", "Collections"];
   final List<String> socialIcons = [
     'assets/images/img_15.png',
     'assets/images/img_16.png',
     'assets/images/img_17.png',
   ];
 
-  final List<String> shotImages = [
-    'assets/images/img_19.png',
-    'assets/images/img_20.png',
-    'assets/images/img_21.png',
-    'assets/images/img_22.png',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+    _checkFollowingStatus();
+  }
 
-  final List<Collection> collections = [
-    Collection(
-      title: 'Your Likes',
-      coverImage: 'assets/images/img_23.png',
-      id: '', imageIds: [], ownerId: '',
-    ),
-    Collection(
-      title: 'Download',
-      coverImage: 'assets/images/img_24.png',
-       id: '', imageIds: [], ownerId: '',
-    ),
-    Collection(
-      title: 'Photography',
-      coverImage: 'assets/images/img_25.png',
-      id: '', imageIds: [], ownerId: '',
-    ),
-  ];
+  Future<void> _loadUserData() async {
+    final userShots = await Shot.getUserShots(widget.user.uid);
+    final userCollections = await Collection.getUserCollections(widget.user.uid);
+    setState(() {
+      shots = userShots;
+      collections = userCollections;
+    });
+  }
+
+  Future<void> _checkFollowingStatus() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final appUser = await AppUser.getFromFirestore(currentUser.uid);
+      if (appUser != null) {
+        final following = await appUser.isFollowing(widget.user.uid);
+        setState(() {
+          isFollowing = following;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleFollow() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final appUser = await AppUser.getFromFirestore(currentUser.uid);
+    if (appUser != null) {
+      try {
+        if (isFollowing) {
+          await appUser.unfollowUser(widget.user.uid);
+          setState(() {
+            isFollowing = false;
+            widget.user.followers--;
+          });
+        } else {
+          await appUser.followUser(widget.user.uid);
+          setState(() {
+            isFollowing = true;
+            widget.user.followers++;
+          });
+        }
+      } catch (e) {
+        print('Error toggling follow: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +131,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                 right: 0,
                 child: Center(
                   child: Text(
-                    widget.user.email,
+                    '@${widget.user.email.split('@')[0]}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -96,61 +143,65 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
               Positioned(
                 top: MediaQuery.of(context).padding.top + 28,
                 right: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: const Text(
-                    'Follow',
-                    style: TextStyle(
-                      color: Color(0xFF6A6BF4), // tím đậm
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                child: GestureDetector(
+                  onTap: isLoading ? null : _toggleFollow,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isFollowing ? Colors.grey.shade300 : Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Text(
+                      isFollowing ? 'Unfollow' : 'Follow',
+                      style: TextStyle(
+                        color: isFollowing
+                            ? Colors.black54
+                            : const Color(0xFF6A6BF4),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
               ),
-              const Positioned(
+              Positioned(
                 bottom: -55,
                 left: 0,
                 right: 0,
                 child: Center(
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/images/avatar1.jpg'),
+                    backgroundImage: widget.user.imageUrl != null
+                        ? ImageUtils.getImageProvider(widget.user.imageUrl)
+                        : const AssetImage('assets/images/avatar1.jpg'),
                   ),
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 60),
-
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
                   Text(
-                    widget.user.name,
+                    '${widget.user.name ?? 'Unknown'} ${widget.user.lastName ?? ''}'
+                        .trim(),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 22,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    "Da Nang, Vietnam",
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  Text(
+                    (widget.user.location ?? 'Unknown Location').trim(),
+                    style: const TextStyle(color: Colors.grey, fontSize: 16),
                   ),
-
                   const SizedBox(height: 20),
-
                   // Followers
                   Container(
                     width: double.infinity,
@@ -161,44 +212,36 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Text(
-                          "220",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                          "${widget.user.followers}",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
                         ),
-                        SizedBox(width: 4),
-                        Text(
+                        const SizedBox(width: 4),
+                        const Text(
                           "Followers",
                           style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
-                        SizedBox(width: 48),
+                        const SizedBox(width: 48),
                         Text(
-                          "150",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                          "${widget.user.following}",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
                         ),
-                        SizedBox(width: 4),
-                        Text(
+                        const SizedBox(width: 4),
+                        const Text(
                           "Following",
                           style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
                   // Social Icons + Dot
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(socialIcons.length * 2 - 1, (
-                      index,
-                    ) {
+                    children: List.generate(socialIcons.length * 2 - 1, (index) {
                       if (index.isEven) {
                         final iconIndex = index ~/ 2;
                         return Image.asset(
@@ -223,9 +266,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                       }
                     }),
                   ),
-
                   const SizedBox(height: 30),
-
                   // Tab Bar with actual count
                   Container(
                     width: double.infinity,
@@ -234,7 +275,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                       children: List.generate(tabs.length, (index) {
                         final isSelected = selectedTab == index;
                         final count =
-                            index == 0 ? shotImages.length : collections.length;
+                        index == 0 ? shots.length : collections.length;
 
                         return Expanded(
                           child: GestureDetector(
@@ -246,10 +287,9 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color:
-                                    isSelected
-                                        ? const Color(0xFFF1F1FE)
-                                        : Colors.transparent,
+                                color: isSelected
+                                    ? const Color(0xFFF1F1FE)
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
@@ -258,10 +298,9 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color:
-                                        isSelected
-                                            ? const Color(0xFF6A6BF4)
-                                            : const Color(0xFFB8B8B8),
+                                    color: isSelected
+                                        ? const Color(0xFF6A6BF4)
+                                        : const Color(0xFFB8B8B8),
                                   ),
                                 ),
                               ),
@@ -271,14 +310,11 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                       }),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
                   // Content Grid or Empty
                   selectedTab == 0
-                      ? _buildGridOrEmpty(shotImages)
+                      ? _buildGridOrEmpty(shots)
                       : _buildCollections(),
-
                   const SizedBox(height: 40),
                 ],
               ),
@@ -289,8 +325,8 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
     );
   }
 
-  Widget _buildGridOrEmpty(List<String> images) {
-    if (images.isEmpty) {
+  Widget _buildGridOrEmpty(List<Shot> shots) {
+    if (shots.isEmpty) {
       return Center(
         child: Image.asset('assets/images/img_18.png', width: 200, height: 200),
       );
@@ -302,11 +338,18 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
       crossAxisCount: 2,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      itemCount: images.length,
+      itemCount: shots.length,
       itemBuilder: (context, index) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.asset(images[index], fit: BoxFit.cover),
+          child: Image.network(
+            shots[index].imageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              'assets/images/img_18.png',
+              fit: BoxFit.cover,
+            ),
+          ),
         );
       },
     );
@@ -333,7 +376,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
         final collection = collections[index];
         return GestureDetector(
           onTap: () {
-            context.push('/collection-detail', extra: collection);
+            context.push('/collection-detail', extra: {'collection': collection});
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,25 +386,45 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
+                    child: Image.network(
                       collection.coverImage,
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: 166,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/images/img_18.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                  Container(
-                    width: double.infinity,
-                    height: 166,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                  Positioned.fill(
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        collection.title ?? 'No Title',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black54,
+                              blurRadius: 4,
+                              offset: Offset(1, 1),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
-
               const SizedBox(height: 8),
-
               Text(
                 '${collection.imageIds.length} shots',
                 style: const TextStyle(
