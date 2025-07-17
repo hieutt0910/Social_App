@@ -198,18 +198,25 @@ class _AccountPageState extends State<AccountPage> {
               String? url;
               switch (label) {
                 case "Email":
-                  if (_user?.email != null && _user!.email.isNotEmpty) {
-                    url = 'mailto:${_user!.email}';
-                    if (await canLaunchUrl(Uri.parse(url))) {
-                      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Cannot launch email app')),
-                      );
-                    }
+                  String? encodeQueryParameters(Map<String, String> params) {
+                    return params.entries
+                        .map((MapEntry<String, String> e) =>
+                    '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+                        .join('&');
+                  }
+                  final Uri emailUri = Uri(
+                    scheme: 'mailto',
+                    path: _user?.email ?? '',
+                    query: encodeQueryParameters({
+                      'subject': 'Contact me',
+                      'body': 'Hello, This is Social App',
+                    }),
+                  );
+                  if(await canLaunchUrl(emailUri)) {
+                    await launchUrl(emailUri, mode: LaunchMode.externalApplication);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Email not available')),
+                      const SnackBar(content: Text('Could not launch email app')),
                     );
                   }
                   break;
