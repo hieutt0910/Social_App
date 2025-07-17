@@ -29,7 +29,7 @@ class PostWidget extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
     final String? currentUid = user?.uid;
     final uid = post.userId;
-    final createdText = timeago.format(post.createdAt, locale: 'vi');
+    final createdText = timeago.format(post.createdAt, locale: 'en');
 
     return GestureDetector(
       onTap: () {
@@ -62,9 +62,13 @@ class PostWidget extends StatelessWidget {
                   return Row(
                     children: [
                       GestureDetector(
-                        onTap:
-                            () =>
-                                context.push('/other-profile', extra: userData),
+                        onTap: () {
+                          if (userData.uid == currentUid) {
+                            context.push('/user-profile');
+                          } else {
+                            context.push('/other-profile', extra: userData);
+                          }
+                        },
                         child: AssetsManager.showImage(
                           'assets/images/avatar1.jpg',
                           height: 30,
@@ -96,14 +100,11 @@ class PostWidget extends StatelessWidget {
               ),
             ),
             if (post.imageUrls.isNotEmpty)
-              Hero(
-                tag: post.imageUrls.first,
-                child: AssetsManager.showImage(
-                  post.imageUrls.first,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  height: 230,
-                ),
+              AssetsManager.showImage(
+                post.imageUrls.first,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                height: 230,
               ),
             if (post.caption.isNotEmpty)
               Padding(

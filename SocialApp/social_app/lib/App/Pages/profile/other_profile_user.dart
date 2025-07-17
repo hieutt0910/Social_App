@@ -14,6 +14,11 @@ class OtherUserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<OtherUserProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   int selectedTab = 0;
 
   final List<String> tabs = ["shots", "Collections"];
@@ -35,17 +40,23 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
     Collection(
       title: 'Your Likes',
       coverImage: 'assets/images/img_23.png',
-      id: '', imageIds: [], ownerId: '',
+      id: '',
+      imageIds: [],
+      ownerId: '',
     ),
     Collection(
       title: 'Download',
       coverImage: 'assets/images/img_24.png',
-       id: '', imageIds: [], ownerId: '',
+      id: '',
+      imageIds: [],
+      ownerId: '',
     ),
     Collection(
       title: 'Photography',
       coverImage: 'assets/images/img_25.png',
-      id: '', imageIds: [], ownerId: '',
+      id: '',
+      imageIds: [],
+      ownerId: '',
     ),
   ];
 

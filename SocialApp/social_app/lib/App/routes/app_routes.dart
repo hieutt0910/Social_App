@@ -105,7 +105,7 @@ class AppRouter {
                   title: 'Untitled',
                   coverImage: '',
                   imageIds: [],
-                  ownerId: '',
+                  ownerId: '', 
                 ),
           );
         },

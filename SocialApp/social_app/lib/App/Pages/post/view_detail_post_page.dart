@@ -90,7 +90,7 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
 
   Widget _buildBody(BuildContext context, PostEntity post) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    final createdText = timeago.format(post.createdAt, locale: 'vi');
+    final createdText = timeago.format(post.createdAt, locale: 'en');
     return Column(
       children: [
         Expanded(

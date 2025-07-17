@@ -15,7 +15,7 @@ import 'package:social_app/domain/repositories/post_repository.dart';
 
 import 'package:social_app/domain/usecase/post/create_post.dart';
 import 'package:social_app/domain/usecase/post/delete_post.dart';
-import 'package:social_app/domain/usecase/post/get_post.dart';
+import 'package:social_app/domain/usecase/post/get_post_by_condition.dart';
 import 'package:social_app/domain/usecase/post/get_post_by_hashtag.dart';
 import 'package:social_app/domain/usecase/post/increment_view_usecase.dart';
 import 'package:social_app/domain/usecase/post/toggle_like_post.dart';
@@ -37,7 +37,7 @@ Future<void> initDI() async {
   sl.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(sl()));
 
   sl.registerLazySingleton(() => CreatePostUseCase(sl()));
-  sl.registerLazySingleton(() => GetPostsUseCase(sl()));
+  sl.registerLazySingleton(() => GetPostsByConditionUseCase(sl()));
   sl.registerLazySingleton(() => GetPostsByHashtagUseCase(sl()));
   sl.registerLazySingleton(() => ToggleLikeUseCase(sl()));
   sl.registerLazySingleton(() => DeletePostUseCase(sl()));
@@ -48,7 +48,7 @@ Future<void> initDI() async {
     () => PostBloc(
       createPost: sl(),
       updatePost: sl(),
-      getPosts: sl(),
+      getPostsByContion: sl(),
       getByHashtag: sl(),
       toggleLike: sl(),
       deletePost: sl(),

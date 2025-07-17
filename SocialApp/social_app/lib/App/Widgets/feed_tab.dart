@@ -4,7 +4,6 @@ import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/bloc/post/post_state.dart';
 import 'package:social_app/app/widgets/post_widget.dart';
-import 'package:social_app/Data/model/user.dart';
 import 'package:social_app/style/app_text_style.dart';
 
 class FeedTab extends StatefulWidget {

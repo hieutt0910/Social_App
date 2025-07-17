@@ -42,22 +42,6 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   }
 
   @override
-  Stream<List<PostEntity>> getPosts() {
-    return _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs
-                  .map(
-                    (doc) => PostModel.fromMap(doc.data(), doc.id).toEntity(),
-                  )
-                  .toList(),
-        );
-  }
-
-  @override
   Future<void> deletePost(String postId) async {
     await _firestore.collection('posts').doc(postId).delete();
   }
@@ -108,5 +92,33 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   Future<void> updatePost(PostEntity post) async {
     final model = PostModel.fromEntity(post);
     await _firestore.collection('posts').doc(post.id).update(model.toMap());
+  }
+
+  @override
+  Stream<List<PostEntity>> getPostsByCondition({String? hashtag, String? uid}) {
+    Query query = _postCol;
+
+    if (hashtag != null) {
+      query = query.where('hashtags', arrayContains: hashtag);
+    }
+
+    if (uid != null) {
+      query = query.where('uid', isEqualTo: uid);
+    }
+
+    query = query.orderBy('createdAt', descending: true);
+
+    return query.snapshots().map(
+      (snap) =>
+          snap.docs
+              .map(
+                (d) =>
+                    PostModel.fromMap(
+                      d.data() as Map<String, dynamic>,
+                      d.id,
+                    ).toEntity(),
+              )
+              .toList(),
+    );
   }
 }

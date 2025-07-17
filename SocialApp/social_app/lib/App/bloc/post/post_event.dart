@@ -75,7 +75,10 @@ class PostByHashtagRequested extends PostEvent {
   final String hashtag;
   const PostByHashtagRequested(this.hashtag);
 }
-
+class PostByUserIdRequested extends PostEvent {
+  final String userId;
+  const PostByUserIdRequested(this.userId);
+}
 class PostEditRequested extends PostEvent {
   final PostEntity updatedPost;
 
