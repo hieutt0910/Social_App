@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import '../../../Data/model/collection.dart';
+import '../../../Data/model/shot.dart';
 import '../../../Data/model/user.dart';
 import '../../utils/image_base64.dart';
 
@@ -16,47 +18,14 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   int selectedTab = 0;
   AppUser? _user;
+  List<Shot> shots = [];
+  List<Collection> collections = [];
 
-  final List<String> tabs = ["shots", "Collections"];
-
+  final List<String> tabs = ["Shots", "Collections"];
   final List<String> socialIcons = [
     'assets/images/img_15.png',
     'assets/images/img_16.png',
     'assets/images/img_17.png',
-  ];
-
-  final List<String> shotImages = [
-    'assets/images/img_19.png',
-    'assets/images/img_20.png',
-    'assets/images/img_21.png',
-    'assets/images/img_22.png',
-  ];
-
-  final List<Collection> collections = [
-    Collection(
-      title: 'Your Likes',
-      coverImage: 'assets/images/img_23.png',
-      images: [
-        'assets/images/img_19.png',
-        'assets/images/img_20.png',
-      ],
-    ),
-    Collection(
-      title: 'Download',
-      coverImage: 'assets/images/img_24.png',
-      images: [
-        'assets/images/img_21.png',
-        'assets/images/img_22.png',
-      ],
-    ),
-    Collection(
-      title: 'Photography',
-      coverImage: 'assets/images/img_25.png',
-      images: [
-        'assets/images/img_19.png',
-        'assets/images/img_20.png',
-      ],
-    ),
   ];
 
   @override
@@ -69,14 +38,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser != null) {
       final appUser = await AppUser.getFromFirestore(firebaseUser.uid);
+      final userShots = await Shot.getUserShots(firebaseUser.uid);
+      final userCollections = await Collection.getUserCollections(firebaseUser.uid);
       if (appUser != null) {
         setState(() {
           _user = appUser;
+          shots = userShots;
+          collections = userCollections;
         });
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +56,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Header
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -96,7 +67,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   fit: BoxFit.cover,
                 ),
               ),
-              // Back icon
               Positioned(
                 top: MediaQuery.of(context).padding.top + 20,
                 left: 16,
@@ -140,9 +110,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
             ],
           ),
-
           const SizedBox(height: 60),
-
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -160,10 +128,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     (_user?.location ?? 'Unknown Location').trim(),
                     style: const TextStyle(color: Colors.grey, fontSize: 16),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Followers
+                  // Followers and Following
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -173,21 +139,28 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text("220", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                        SizedBox(width: 4),
-                        Text("Followers", style: TextStyle(color: Colors.grey, fontSize: 16)),
-                        SizedBox(width: 48),
-                        Text("150", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                        SizedBox(width: 4),
-                        Text("Following", style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      children: [
+                        Text(
+                          "${_user?.followers ?? 0}",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text("Followers",
+                            style: TextStyle(color: Colors.grey, fontSize: 16)),
+                        const SizedBox(width: 48),
+                        Text(
+                          "${_user?.following ?? 0}",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text("Following",
+                            style: TextStyle(color: Colors.grey, fontSize: 16)),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Social Icons + Dot
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(socialIcons.length * 2 - 1, (index) {
@@ -215,17 +188,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       }
                     }),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Tab Bar with actual count
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(4),
                     child: Row(
                       children: List.generate(tabs.length, (index) {
                         final isSelected = selectedTab == index;
-                        final count = index == 0 ? shotImages.length : collections.length;
+                        final count = index == 0 ? shots.length : collections.length;
 
                         return Expanded(
                           child: GestureDetector(
@@ -237,7 +207,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFFF1F1FE) : Colors.transparent,
+                                color: isSelected
+                                    ? const Color(0xFFF1F1FE)
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
@@ -258,14 +230,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       }),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Content Grid or Empty
                   selectedTab == 0
-                      ? _buildGridOrEmpty(shotImages)
+                      ? _buildGridOrEmpty(shots)
                       : _buildCollections(),
-
                   const SizedBox(height: 40),
                 ],
               ),
@@ -276,8 +244,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildGridOrEmpty(List<String> images) {
-    if (images.isEmpty) {
+  Widget _buildGridOrEmpty(List<Shot> shots) {
+    if (shots.isEmpty) {
       return Center(
         child: Image.asset(
           'assets/images/img_18.png',
@@ -293,13 +261,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
       crossAxisCount: 2,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      itemCount: images.length,
+      itemCount: shots.length,
       itemBuilder: (context, index) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.asset(
-            images[index],
+          child: Image.network(
+            shots[index].imageUrl,
             fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              'assets/images/img_18.png',
+              fit: BoxFit.cover,
+            ),
           ),
         );
       },
@@ -337,25 +309,48 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
+                    child: Image.network(
                       collection.coverImage,
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: 166,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/images/img_18.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                  Container(
-                    width: double.infinity,
-                    height: 166,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                  // Title text in center
+                  Positioned.fill(
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        collection.title ?? 'No Title',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black54,
+                              blurRadius: 4,
+                              offset: Offset(1, 1),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                '${collection.images.length} shots',
+                '${collection.imageIds.length} shots',
                 style: const TextStyle(
                   color: Color(0xFF8E8E93),
                   fontSize: 14,

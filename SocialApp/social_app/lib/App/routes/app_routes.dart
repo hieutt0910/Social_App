@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_app/Data/model/collection.dart';
-import 'package:social_app/Data/model/user.dart';
 import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
 import 'package:social_app/app/bloc/verify/verify_bloc.dart';
 import 'package:social_app/app/pages/post/edit_post_page.dart';
@@ -15,7 +14,6 @@ import 'package:social_app/app/pages/post/create_post_page.dart';
 import 'package:social_app/app/pages/post/view_detail_post_page.dart';
 import 'package:social_app/app/pages/profile/collection_page.dart';
 import 'package:social_app/app/pages/profile/edit_profile_page.dart';
-import 'package:social_app/app/pages/profile/other_profile_user.dart';
 import 'package:social_app/app/pages/profile/profile_screen.dart';
 import 'package:social_app/app/pages/profile/user_profile.dart';
 import 'package:social_app/app/pages/search_post/hashtag_post.dart';
@@ -26,6 +24,8 @@ import 'package:social_app/data/repositories/dynamic_link_handler.dart';
 import 'package:social_app/di.dart';
 import 'package:social_app/domain/entity/post.dart';
 
+import '../../Data/model/user.dart';
+import '../Pages/profile/other_profile_user.dart';
 import '../bloc/changespw/changepw_bloc.dart';
 import '../bloc/changespw/changepw_ui.dart';
 
@@ -99,8 +99,14 @@ class AppRouter {
           final args = state.extra as Map<String, dynamic>?;
           final collection = args?['collection'] as Collection?;
           return CollectionDetailPage(
-            collection:
-                collection ?? Collection(title: '', coverImage: '', images: []),
+            collection: collection ??
+                Collection(
+                  id: '',
+                  title: 'Untitled',
+                  coverImage: '',
+                  imageIds: [],
+                  ownerId: '',
+                ),
           );
         },
       ),

@@ -35,17 +35,17 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
     Collection(
       title: 'Your Likes',
       coverImage: 'assets/images/img_23.png',
-      images: ['assets/images/img_19.png', 'assets/images/img_20.png'],
+      id: '', imageIds: [], ownerId: '',
     ),
     Collection(
       title: 'Download',
       coverImage: 'assets/images/img_24.png',
-      images: ['assets/images/img_21.png', 'assets/images/img_22.png'],
+       id: '', imageIds: [], ownerId: '',
     ),
     Collection(
       title: 'Photography',
       coverImage: 'assets/images/img_25.png',
-      images: ['assets/images/img_19.png', 'assets/images/img_20.png'],
+      id: '', imageIds: [], ownerId: '',
     ),
   ];
 
@@ -363,7 +363,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
               const SizedBox(height: 8),
 
               Text(
-                '${collection.images.length} shots',
+                '${collection.imageIds.length} shots',
                 style: const TextStyle(
                   color: Color(0xFF8E8E93),
                   fontSize: 14,
