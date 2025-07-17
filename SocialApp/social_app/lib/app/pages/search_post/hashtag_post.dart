@@ -4,8 +4,8 @@ import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/bloc/post/post_state.dart';
 import 'package:social_app/app/widgets/post_widget.dart';
-
 import '../../../Data/model/user.dart';
+import '../../utils/image_base64.dart';
 
 class HashtagPostsPage extends StatefulWidget {
   final String hashtag;
@@ -49,14 +49,34 @@ class _HashtagPostsPageState extends State<HashtagPostsPage> {
               itemCount: posts.length,
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (_, i) {
-                AppUser user =
-                    AppUser.getFromFirestore(posts[i].userId) as AppUser;
-                PostWidget(
-                  post: posts[i],
-                  onLike: () {},
-                  onComment: () {},
+                final post = posts[i];
+                return FutureBuilder<AppUser?>(
+                  future: AppUser.getFromFirestore(post.userId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const ListTile(
+                        leading: CircularProgressIndicator(),
+                        title: Text('Đang tải...'),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      return ListTile(
+                        title: Text('Lỗi: ${snapshot.error}'),
+                      );
+                    }
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const ListTile(
+                        title: Text('Không tìm thấy người dùng'),
+                      );
+                    }
+                    final user = snapshot.data!;
+                    return PostWidget(
+                      post: post,
+                      onLike: () {},
+                      onComment: () {},
+                    );
+                  },
                 );
-                return null;
               },
             );
           }
