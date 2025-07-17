@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../Data/model/collection.dart';
+import '../../../Data/model/shot.dart';
 
 class CollectionDetailPage extends StatelessWidget {
   final Collection collection;
@@ -15,7 +17,6 @@ class CollectionDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Custom Top Bar with Back Button and Title
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
@@ -36,32 +37,47 @@ class CollectionDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // để cân khoảng trống bên phải như bên trái
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
-
             const SizedBox(height: 8),
-
-            // Grid of Images
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GridView.builder(
-                  itemCount: collection.images.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.75,
-                  ),
-                  itemBuilder: (context, index) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        collection.images[index],
-                        fit: BoxFit.cover,
+                child: FutureBuilder<List<Shot>>(
+                  future: _fetchCollectionShots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Image.asset('assets/images/img_18.png', width: 200, height: 200),
+                      );
+                    }
+                    final shots = snapshot.data!;
+                    return GridView.builder(
+                      itemCount: shots.length,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.75,
                       ),
+                      itemBuilder: (context, index) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            shots[index].imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              'assets/images/img_18.png',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -71,5 +87,23 @@ class CollectionDetailPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<List<Shot>> _fetchCollectionShots() async {
+    List<Shot> shots = [];
+    for (String shotId in collection.imageIds) {
+      try {
+        DocumentSnapshot doc = await FirebaseFirestore.instance
+            .collection('shots')
+            .doc(shotId)
+            .get();
+        if (doc.exists) {
+          shots.add(Shot.fromMap(doc.data() as Map<String, dynamic>, doc.id));
+        }
+      } catch (e) {
+        print('Error fetching shot $shotId: $e');
+      }
+    }
+    return shots;
   }
 }

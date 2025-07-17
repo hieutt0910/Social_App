@@ -1,4 +1,5 @@
-import '../../../Domain/entity/user.dart';
+
+import '../../../Data/model/user.dart';
 
 abstract class AccountState {}
 

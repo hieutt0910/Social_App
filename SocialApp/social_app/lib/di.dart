@@ -61,7 +61,6 @@ Future<void> initDI() async {
   sl.registerFactory(() => ForgotPasswordBloc());
   sl.registerFactory(() => ChangePasswordBloc());
 
-
   // Đăng ký VerifyBloc với tham số email và fromRoute
   sl.registerFactoryParam<VerifyBloc, String, String>(
         (email, fromRoute) => VerifyBloc(

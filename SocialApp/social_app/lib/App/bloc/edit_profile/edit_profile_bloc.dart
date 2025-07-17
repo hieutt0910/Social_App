@@ -1,16 +1,10 @@
 import 'package:bloc/bloc.dart';
-import '../../../Domain/usecase/user/get_user.dart';
-import '../../../Domain/usecase/user/update_user.dart';
-
+import '../../../Data/model/user.dart';
 import 'edit_profile_event.dart';
 import 'edit_profile_state.dart';
 
 class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
-  final GetUserUseCase getUserUseCase;
-  final UpdateUserUseCase updateUserUseCase;
-
-  EditProfileBloc({required this.getUserUseCase, required this.updateUserUseCase})
-      : super(EditProfileInitial()) {
+  EditProfileBloc() : super(EditProfileInitial()) {
     on<LoadEditProfileEvent>(_onLoadEditProfile);
     on<UpdateProfileEvent>(_onUpdateProfile);
   }
@@ -18,7 +12,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   Future<void> _onLoadEditProfile(LoadEditProfileEvent event, Emitter<EditProfileState> emit) async {
     emit(EditProfileLoading());
     try {
-      final user = await getUserUseCase.execute(event.uid);
+      final user = await AppUser.getFromFirestore(event.uid);
       if (user != null) {
         emit(EditProfileLoaded(user));
       } else {
@@ -32,18 +26,22 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   Future<void> _onUpdateProfile(UpdateProfileEvent event, Emitter<EditProfileState> emit) async {
     emit(EditProfileLoading());
     try {
-      final updates = <String, dynamic>{};
-      if (event.name.isNotEmpty) updates['name'] = event.name;
-      if (event.lastName.isNotEmpty) updates['lastName'] = event.lastName;
-      if (event.location.isNotEmpty) updates['location'] = event.location;
-      if (event.imageUrl != null) updates['imageUrl'] = event.imageUrl;
-      if (event.instagram != null) updates['instagram'] = event.instagram;
-      if (event.twitter != null) updates['twitter'] = event.twitter;
-      if (event.website != null) updates['website'] = event.website;
-      if (event.terms != null) updates['terms'] = event.terms;
-
-      await updateUserUseCase.execute(event.uid, updates);
-      emit(EditProfileSuccess());
+      final user = await AppUser.getFromFirestore(event.uid);
+      if (user != null) {
+        await user.updateInFirestore(
+          name: event.name.isNotEmpty ? event.name : null,
+          lastName: event.lastName.isNotEmpty ? event.lastName : null,
+          location: event.location.isNotEmpty ? event.location : null,
+          imageUrl: event.imageUrl,
+          instagram: event.instagram,
+          twitter: event.twitter,
+          website: event.website,
+          terms: event.terms,
+        );
+        emit(EditProfileSuccess());
+      } else {
+        emit(EditProfileError('User not found'));
+      }
     } catch (e) {
       emit(EditProfileError('Error updating profile: $e'));
     }

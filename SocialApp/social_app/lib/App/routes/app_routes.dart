@@ -85,18 +85,24 @@ class AppRouter {
         path: '/user-profile',
         builder: (_, __) => const UserProfilePage(),
       ),
-      GoRoute(
-        path: '/other-profile',
-        builder: (_, __) => const OtherUserProfilePage(),
-      ),
+      // GoRoute(
+      //   path: '/other-profile',
+      //   builder: (_, __) => const OtherUserProfilePage(),
+      // ),
       GoRoute(
         path: '/collection-detail',
         builder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
           final collection = args?['collection'] as Collection?;
           return CollectionDetailPage(
-            collection:
-                collection ?? Collection(title: '', coverImage: '', images: []),
+            collection: collection ??
+                Collection(
+                  id: '',
+                  title: 'Untitled',
+                  coverImage: '',
+                  imageIds: [],
+                  ownerId: '',
+                ),
           );
         },
       ),

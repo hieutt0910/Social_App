@@ -11,6 +11,8 @@ class AppUser {
   String? twitter;
   String? website;
   String? terms;
+  int followers;
+  int following;
 
   AppUser({
     required this.uid,
@@ -23,6 +25,8 @@ class AppUser {
     this.twitter,
     this.website,
     this.terms,
+    this.followers = 0,
+    this.following = 0,
   });
 
   factory AppUser.fromMap(Map<String, dynamic> data, String uid) {
@@ -37,6 +41,8 @@ class AppUser {
       twitter: data['twitter'],
       website: data['website'],
       terms: data['terms'],
+      followers: data['followers'] ?? 0,
+      following: data['following'] ?? 0,
     );
   }
 
@@ -52,6 +58,8 @@ class AppUser {
       'twitter': twitter,
       'website': website,
       'terms': terms,
+      'followers': followers,
+      'following': following,
     };
   }
 
@@ -90,6 +98,8 @@ class AppUser {
     String? twitter,
     String? website,
     String? terms,
+    int? followers,
+    int? following,
   }) async {
     final updates = <String, dynamic>{};
     if (name != null) {
@@ -123,6 +133,14 @@ class AppUser {
     if (terms != null) {
       this.terms = terms;
       updates['terms'] = terms;
+    }
+    if (followers != null) {
+      this.followers = followers;
+      updates['followers'] = followers;
+    }
+    if (following != null) {
+      this.following = following;
+      updates['following'] = following;
     }
     if (updates.isNotEmpty) {
       await FirebaseFirestore.instance
