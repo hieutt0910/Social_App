@@ -149,4 +149,95 @@ class AppUser {
           .update(updates);
     }
   }
+
+  // Kiểm tra xem người dùng hiện tại có đang theo dõi người dùng khác không
+  Future<bool> isFollowing(String otherUserId) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('following')
+        .doc(otherUserId)
+        .get();
+    return doc.exists;
+  }
+
+  // Theo dõi một người dùng
+  Future<void> followUser(String otherUserId) async {
+    final batch = FirebaseFirestore.instance.batch();
+
+    // Thêm otherUserId vào following của người dùng hiện tại
+    batch.set(
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('following')
+          .doc(otherUserId),
+      {'timestamp': Timestamp.now()},
+    );
+
+    // Thêm uid vào followers của người dùng được theo dõi
+    batch.set(
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(otherUserId)
+          .collection('followers')
+          .doc(uid),
+      {'timestamp': Timestamp.now()},
+    );
+
+    // Tăng following của người dùng hiện tại
+    batch.update(
+      FirebaseFirestore.instance.collection('users').doc(uid),
+      {'following': FieldValue.increment(1)},
+    );
+
+    // Tăng followers của người dùng được theo dõi
+    batch.update(
+      FirebaseFirestore.instance.collection('users').doc(otherUserId),
+      {'followers': FieldValue.increment(1)},
+    );
+
+    await batch.commit();
+    // Cập nhật local state
+    following++;
+  }
+
+  // Bỏ theo dõi một người dùng
+  Future<void> unfollowUser(String otherUserId) async {
+    final batch = FirebaseFirestore.instance.batch();
+
+    // Xóa otherUserId khỏi following của người dùng hiện tại
+    batch.delete(
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('following')
+          .doc(otherUserId),
+    );
+
+    // Xóa uid khỏi followers của người dùng được theo dõi
+    batch.delete(
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(otherUserId)
+          .collection('followers')
+          .doc(uid),
+    );
+
+    // Giảm following của người dùng hiện tại
+    batch.update(
+      FirebaseFirestore.instance.collection('users').doc(uid),
+      {'following': FieldValue.increment(-1)},
+    );
+
+    // Giảm followers của người dùng được theo dõi
+    batch.update(
+      FirebaseFirestore.instance.collection('users').doc(otherUserId),
+      {'followers': FieldValue.increment(-1)},
+    );
+
+    await batch.commit();
+    // Cập nhật local state
+    following--;
+  }
 }
