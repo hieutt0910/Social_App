@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +11,8 @@ import 'package:social_app/Data/model/user.dart';
 import 'package:social_app/domain/entity/post.dart';
 import 'package:social_app/style/app_text_style.dart';
 import 'package:timeago/timeago.dart' as timeago;
+
+import '../utils/image_base64.dart';
 
 class PostWidget extends StatelessWidget {
   final PostEntity post;
@@ -69,18 +71,15 @@ class PostWidget extends StatelessWidget {
                             context.push('/other-profile', extra: userData);
                           }
                         },
-                        child: AssetsManager.showImage(
-                          'assets/images/avatar1.jpg',
-                          height: 30,
-                          width: 30,
-                          fit: BoxFit.cover,
-                          isCircle: true,
+                        child: CircleAvatar(
+                          radius: 17,
+                          backgroundImage: ImageUtils.getImageProvider(userData.imageUrl),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          userData.name,
+                          '${userData.name} ${userData.lastName}',
                           style: GoogleFonts.manrope(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
