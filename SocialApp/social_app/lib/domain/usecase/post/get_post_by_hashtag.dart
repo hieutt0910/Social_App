@@ -5,7 +5,6 @@ class GetPostsByHashtagUseCase {
   final PostRepository repository;
 
   GetPostsByHashtagUseCase(this.repository);
-
   Stream<List<PostEntity>> call(String hashtag) {
     return repository.getPostsByHashtag(hashtag);
   }

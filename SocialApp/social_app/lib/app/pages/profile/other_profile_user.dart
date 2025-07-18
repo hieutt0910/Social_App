@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
-import 'package:social_app/Data/model/user.dart';
 import 'package:social_app/Data/model/collection.dart';
-import 'package:social_app/Data/model/shot.dart';
+import 'package:social_app/app/bloc/post/post_bloc.dart';
+import 'package:social_app/app/bloc/post/post_event.dart';
+import 'package:social_app/app/bloc/post/post_state.dart';
+import 'package:social_app/data/model/shot.dart';
+import 'package:social_app/data/model/user.dart';
 import '../../utils/image_base64.dart';
 
 class OtherUserProfilePage extends StatefulWidget {
@@ -31,15 +35,23 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
   ];
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadUserData();
     _checkFollowingStatus();
+    context.read<PostBloc>().add(PostByUserIdRequested(widget.user.uid));
   }
 
   Future<void> _loadUserData() async {
     final userShots = await Shot.getUserShots(widget.user.uid);
-    final userCollections = await Collection.getUserCollections(widget.user.uid);
+    final userCollections = await Collection.getUserCollections(
+      widget.user.uid,
+    );
     setState(() {
       shots = userShots;
       collections = userCollections;
@@ -85,9 +97,9 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
         }
       } catch (e) {
         print('Error toggling follow: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
 
@@ -157,9 +169,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                     child: Text(
                       isFollowing ? 'Unfollow' : 'Follow',
                       style: TextStyle(
-                        color: isFollowing
-                            ? Colors.black54
-                            : const Color(0xFF6A6BF4),
+                        color:
+                            isFollowing
+                                ? Colors.black54
+                                : const Color(0xFF6A6BF4),
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -174,9 +187,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundImage: widget.user.imageUrl != null
-                        ? ImageUtils.getImageProvider(widget.user.imageUrl)
-                        : const AssetImage('assets/images/avatar1.jpg'),
+                    backgroundImage:
+                        widget.user.imageUrl != null
+                            ? ImageUtils.getImageProvider(widget.user.imageUrl)
+                            : const AssetImage('assets/images/avatar1.jpg'),
                   ),
                 ),
               ),
@@ -216,7 +230,9 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                         Text(
                           "${widget.user.followers}",
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                         const SizedBox(width: 4),
                         const Text(
@@ -227,7 +243,9 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                         Text(
                           "${widget.user.following}",
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                         const SizedBox(width: 4),
                         const Text(
@@ -241,7 +259,9 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                   // Social Icons + Dot
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(socialIcons.length * 2 - 1, (index) {
+                    children: List.generate(socialIcons.length * 2 - 1, (
+                      index,
+                    ) {
                       if (index.isEven) {
                         final iconIndex = index ~/ 2;
                         return Image.asset(
@@ -275,7 +295,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                       children: List.generate(tabs.length, (index) {
                         final isSelected = selectedTab == index;
                         final count =
-                        index == 0 ? shots.length : collections.length;
+                            index == 0 ? shots.length : collections.length;
 
                         return Expanded(
                           child: GestureDetector(
@@ -287,9 +307,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFFF1F1FE)
-                                    : Colors.transparent,
+                                color:
+                                    isSelected
+                                        ? const Color(0xFFF1F1FE)
+                                        : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
@@ -298,9 +319,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color: isSelected
-                                        ? const Color(0xFF6A6BF4)
-                                        : const Color(0xFFB8B8B8),
+                                    color:
+                                        isSelected
+                                            ? const Color(0xFF6A6BF4)
+                                            : const Color(0xFFB8B8B8),
                                   ),
                                 ),
                               ),
@@ -313,7 +335,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                   const SizedBox(height: 30),
                   // Content Grid or Empty
                   selectedTab == 0
-                      ? _buildGridOrEmpty(shots)
+                      ? _buildPostGridOrEmpty()
                       : _buildCollections(),
                   const SizedBox(height: 40),
                 ],
@@ -325,32 +347,54 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
     );
   }
 
-  Widget _buildGridOrEmpty(List<Shot> shots) {
-    if (shots.isEmpty) {
-      return Center(
-        child: Image.asset('assets/images/img_18.png', width: 200, height: 200),
-      );
-    }
+  Widget _buildPostGridOrEmpty() {
+    return BlocBuilder<PostBloc, PostState>(
+      builder: (context, state) {
+        if (state is PostLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is PostListLoaded) {
+          final userPosts = state.posts; 
+          if (userPosts.isEmpty) {
+            return Center(
+              child: Image.asset(
+                'assets/images/img_18.png',
+                width: 200,
+                height: 200,
+              ),
+            );
+          }
+          return MasonryGridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            itemCount: userPosts.length,
+            itemBuilder: (context, index) {
+              final post = userPosts[index];
+              final imageUrl = post.imageUrls.first;
 
-    return MasonryGridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      itemCount: shots.length,
-      itemBuilder: (context, index) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            shots[index].imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Image.asset(
-              'assets/images/img_18.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-        );
+              return GestureDetector(
+                onTap: () {},
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (context, error, stackTrace) => Image.asset(
+                          'assets/images/img_18.png',
+                          fit: BoxFit.cover,
+                        ),
+                  ),
+                ),
+              );
+            },
+          );
+        } else if (state is PostFailure) {
+          return Center(child: Text('Error loading posts: ${state.error}'));
+        }
+        return const SizedBox.shrink();
       },
     );
   }
@@ -376,7 +420,10 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
         final collection = collections[index];
         return GestureDetector(
           onTap: () {
-            context.push('/collection-detail', extra: {'collection': collection});
+            context.push(
+              '/collection-detail',
+              extra: {'collection': collection},
+            );
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,10 +438,11 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: 166,
-                      errorBuilder: (context, error, stackTrace) => Image.asset(
-                        'assets/images/img_18.png',
-                        fit: BoxFit.cover,
-                      ),
+                      errorBuilder:
+                          (context, error, stackTrace) => Image.asset(
+                            'assets/images/img_18.png',
+                            fit: BoxFit.cover,
+                          ),
                     ),
                   ),
                   Positioned.fill(

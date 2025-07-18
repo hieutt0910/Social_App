@@ -17,7 +17,9 @@ class PostRepositoryImpl implements PostRepository {
   Future<void> createPost(PostEntity post) => remote.createPost(post);
 
   @override
-  Stream<List<PostEntity>> getPosts() => remote.getPosts();
+  Stream<List<PostEntity>> getPostsByCondition({String? hashtag, String? uid}) {
+  return remote.getPostsByCondition(hashtag: hashtag, uid: uid);
+}
 
   @override
   Future<void> deletePost(String postId) => remote.deletePost(postId);
@@ -40,5 +42,5 @@ class PostRepositoryImpl implements PostRepository {
   Future<void> updatePost(PostEntity post) {
     return remote.updatePost(post);
   }
- 
+  
 }

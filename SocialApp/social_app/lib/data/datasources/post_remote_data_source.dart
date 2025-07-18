@@ -5,8 +5,8 @@ import 'package:social_app/domain/entity/post.dart';
 abstract class PostRemoteDataSource {
   Future<List<String>> uploadImages(String postId, List<File> images);
   Future<void> createPost(PostEntity post);
-  Stream<List<PostEntity>> getPosts();
-  Stream<List<PostEntity>> getPostsByHashtag(String hashta);
+  Stream<List<PostEntity>> getPostsByCondition({String? hashtag, String? uid});
+  Stream<List<PostEntity>> getPostsByHashtag(String hashtag);
   Future<void> updatePost(PostEntity post);
 
   Future<void> deletePost(String postId);

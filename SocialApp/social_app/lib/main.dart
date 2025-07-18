@@ -41,7 +41,6 @@ class _MyAppState extends State<MyApp> {
         BlocProvider<ForgotPasswordBloc>(
           create: (_) => sl<ForgotPasswordBloc>(),
         ),
-
         BlocProvider<PostBloc>(create: (_) => sl<PostBloc>()),
       ],
       child: MaterialApp.router(

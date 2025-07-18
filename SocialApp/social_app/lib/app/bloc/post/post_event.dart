@@ -1,3 +1,5 @@
+// social_app/app/bloc/post/post_event.dart
+
 import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:social_app/domain/entity/post.dart';
@@ -59,11 +61,12 @@ class PostsArrived extends PostEvent {
 
 class PostsError extends PostEvent {
   final Object error;
+  final StackTrace? stackTrace; // <--- ADD THIS LINE
 
-  const PostsError(this.error);
+  const PostsError(this.error, [this.stackTrace]); // <--- UPDATE CONSTRUCTOR
 
   @override
-  List<Object?> get props => [error];
+  List<Object?> get props => [error, stackTrace]; // <--- UPDATE PROPS
 }
 
 class PostViewIncreaseRequested extends PostEvent {
@@ -74,6 +77,11 @@ class PostViewIncreaseRequested extends PostEvent {
 class PostByHashtagRequested extends PostEvent {
   final String hashtag;
   const PostByHashtagRequested(this.hashtag);
+}
+
+class PostByUserIdRequested extends PostEvent {
+  final String userId;
+  const PostByUserIdRequested(this.userId);
 }
 
 class PostEditRequested extends PostEvent {
@@ -87,8 +95,8 @@ class PostEditRequested extends PostEvent {
 
 class PostSearchRequested extends PostEvent {
   final String query;
-  final String currentTab; 
-  final String userId; 
+  final String currentTab;
+  final String userId;
 
   const PostSearchRequested({
     required this.query,
