@@ -33,9 +33,9 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
     timeago.setLocaleMessages('vi', timeago.ViMessages());
 
     _commentController =
-        TextEditingController()..addListener(
+    TextEditingController()..addListener(
           () => setState(() => _isTexting = _commentController.text.isNotEmpty),
-        );
+    );
     context.read<PostBloc>().add(PostViewIncreaseRequested(widget.postId));
   }
 
@@ -82,11 +82,188 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
       ),
       IconButton(
         icon: AssetsManager.showImage('assets/icons/save-collection.svg'),
-        onPressed: () {},
+        onPressed: () {
+          _showSaveToCollectionBottomSheet(context);
+        },
       ),
       const SizedBox(width: 8),
     ],
   );
+
+  void _showSaveToCollectionBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Cho phép bottom sheet chiếm toàn bộ chiều cao cần thiết
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+      ),
+      builder: (BuildContext context) {
+        return _buildSaveToCollectionBottomSheet();
+      },
+    );
+  }
+
+  Widget _buildSaveToCollectionBottomSheet() {
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
+      child: Container(
+        padding: const EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0, bottom: 16.0), // Padding để điều chỉnh vị trí
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0, // Đặt sát mép trên
+              left: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey, width: 0.5), // Viền xám
+                    ),
+                    child: CircleAvatar(
+                      radius: 18, // Bán kính của hình tròn bên trong
+                      backgroundColor: Colors.white, // Nền trắng
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.black,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.only(top: 40.0), // Đẩy nội dung xuống dưới nút đóng
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Save to collection',
+                        style: GoogleFonts.manrope(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Xử lý tạo bộ sưu tập mới
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white, // Loại bỏ màu nền mặc định
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          padding: EdgeInsets.zero, // Loại bỏ padding mặc định
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFF888BF4),
+                                  Color(0xFF5151C6),
+                                ],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                              child: Text(
+                                'New Collection',
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Your Collections',
+                    style: GoogleFonts.manrope(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: [
+                          _buildCollectionItem('PORTRAIT PHOTOGRAPHY', true),
+                          _buildCollectionItem('PORTRAIT PHOTOGRAPHY', false),
+                          _buildCollectionItem('PORTRAIT PHOTOGRAPHY', true),
+                          _buildCollectionItem('PORTRAIT PHOTOGRAPHY', false),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCollectionItem(String title, bool isSelected) {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        border: Border.all(color: isSelected ? Colors.blue : Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(8.0),
+        color: Colors.blue[100],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.manrope(
+              fontSize: 12,
+              color: Colors.black,
+            ),
+          ),
+          if (isSelected)
+            const Icon(Icons.check_circle, color: Colors.blue, size: 16),
+        ],
+      ),
+    );
+  }
 
   Widget _buildBody(BuildContext context, PostEntity post) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
@@ -202,17 +379,17 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
                               }
                             },
                             child:
-                                post.isLikedBy(currentUid ?? '')
-                                    ? AssetsManager.showImage(
-                                      'assets/icons/like-fill.svg',
-                                      width: 20,
-                                      height: 20,
-                                    )
-                                    : AssetsManager.showImage(
-                                      'assets/icons/like.svg',
-                                      width: 20,
-                                      height: 20,
-                                    ),
+                            post.isLikedBy(currentUid ?? '')
+                                ? AssetsManager.showImage(
+                              'assets/icons/like-fill.svg',
+                              width: 20,
+                              height: 20,
+                            )
+                                : AssetsManager.showImage(
+                              'assets/icons/like.svg',
+                              width: 20,
+                              height: 20,
+                            ),
                           ),
                         ],
                       ),
@@ -300,7 +477,7 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
                 leading: const Icon(Icons.edit),
                 title: const Text('Chỉnh sửa bài viết'),
                 onTap: () {
-                  context.pop(); 
+                  context.pop();
                   context.push('/edit-post', extra: post);
                 },
               ),
