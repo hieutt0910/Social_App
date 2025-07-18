@@ -52,7 +52,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   void _submit() {
     final caption = _captionController.text.trim();
-    if (caption.isEmpty && _selectedImages.isEmpty) {
+    if (caption.isEmpty || _selectedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Bạn chưa nhập nội dung hoặc chọn ảnh')),
       );

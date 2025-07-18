@@ -1,8 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_app/Data/model/collection.dart';
+import 'package:social_app/app/bloc/post/post_bloc.dart';
+import 'package:social_app/app/bloc/post/post_event.dart';
+import 'package:social_app/app/bloc/post/post_state.dart';
 import 'package:social_app/data/model/shot.dart';
 import 'package:social_app/data/model/user.dart';
 import '../../utils/image_base64.dart';
@@ -31,10 +35,16 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
   ];
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadUserData();
     _checkFollowingStatus();
+    context.read<PostBloc>().add(PostByUserIdRequested(widget.user.uid));
   }
 
   Future<void> _loadUserData() async {
@@ -325,7 +335,7 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                   const SizedBox(height: 30),
                   // Content Grid or Empty
                   selectedTab == 0
-                      ? _buildGridOrEmpty(shots)
+                      ? _buildPostGridOrEmpty()
                       : _buildCollections(),
                   const SizedBox(height: 40),
                 ],
@@ -337,31 +347,54 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
     );
   }
 
-  Widget _buildGridOrEmpty(List<Shot> shots) {
-    if (shots.isEmpty) {
-      return Center(
-        child: Image.asset('assets/images/img_18.png', width: 200, height: 200),
-      );
-    }
+  Widget _buildPostGridOrEmpty() {
+    return BlocBuilder<PostBloc, PostState>(
+      builder: (context, state) {
+        if (state is PostLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is PostListLoaded) {
+          final userPosts = state.posts; 
+          if (userPosts.isEmpty) {
+            return Center(
+              child: Image.asset(
+                'assets/images/img_18.png',
+                width: 200,
+                height: 200,
+              ),
+            );
+          }
+          return MasonryGridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            itemCount: userPosts.length,
+            itemBuilder: (context, index) {
+              final post = userPosts[index];
+              final imageUrl = post.imageUrls.first;
 
-    return MasonryGridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      itemCount: shots.length,
-      itemBuilder: (context, index) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            shots[index].imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder:
-                (context, error, stackTrace) =>
-                    Image.asset('assets/images/img_18.png', fit: BoxFit.cover),
-          ),
-        );
+              return GestureDetector(
+                onTap: () {},
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (context, error, stackTrace) => Image.asset(
+                          'assets/images/img_18.png',
+                          fit: BoxFit.cover,
+                        ),
+                  ),
+                ),
+              );
+            },
+          );
+        } else if (state is PostFailure) {
+          return Center(child: Text('Error loading posts: ${state.error}'));
+        }
+        return const SizedBox.shrink();
       },
     );
   }

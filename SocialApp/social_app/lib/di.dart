@@ -35,7 +35,7 @@ Future<void> initDI() async {
   );
 
   sl.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(sl()));
-
+  
   sl.registerLazySingleton(() => CreatePostUseCase(sl()));
   sl.registerLazySingleton(() => GetPostsByConditionUseCase(sl()));
   sl.registerLazySingleton(() => GetPostsByHashtagUseCase(sl()));

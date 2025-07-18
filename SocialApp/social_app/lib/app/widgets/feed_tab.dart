@@ -22,7 +22,8 @@ class FeedTabState extends State<FeedTab> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PostBloc, PostState>(
+    return BlocBuilder(
+      bloc: context.read<PostBloc>(),
       builder: (context, state) {
         if (state is PostLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -40,17 +41,25 @@ class FeedTabState extends State<FeedTab> {
               ),
             );
           }
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            itemCount: posts.length,
-            itemBuilder: (_, i) {
-              return PostWidget(
-                post: posts[i],
-                onLike: () {},
-                onComment: () {},
-              );
-            },
-            separatorBuilder: (_, __) => const SizedBox(height: 16),
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  itemCount: posts.length,
+                  itemBuilder: (_, i) {
+                    return PostWidget(
+                      post: posts[i],
+                      onLike: () {},
+                      onComment: () {},
+                    );
+                  },
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                ),
+              ),
+              SizedBox(height: 80),
+            ],
           );
         }
         return const SizedBox();

@@ -5,7 +5,6 @@ import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/bloc/post/post_state.dart';
 import 'package:social_app/app/widgets/post_widget.dart';
 import '../../../Data/model/user.dart';
-import '../../utils/image_base64.dart';
 
 class HashtagPostsPage extends StatefulWidget {
   final String hashtag;
@@ -67,7 +66,6 @@ class _HashtagPostsPageState extends State<HashtagPostsPage> {
                         title: Text('Không tìm thấy người dùng'),
                       );
                     }
-                    final user = snapshot.data!;
                     return PostWidget(
                       post: post,
                       onLike: () {},

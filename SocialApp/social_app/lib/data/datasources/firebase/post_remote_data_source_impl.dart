@@ -103,7 +103,7 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
     }
 
     if (uid != null) {
-      query = query.where('uid', isEqualTo: uid);
+      query = query.where('userId', isEqualTo: uid);
     }
 
     query = query.orderBy('createdAt', descending: true);
