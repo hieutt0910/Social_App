@@ -5,7 +5,7 @@ import 'package:social_app/app/bloc/post/post_state.dart';
 import 'package:social_app/domain/entity/post.dart';
 import 'package:social_app/domain/usecase/post/create_post.dart';
 import 'package:social_app/domain/usecase/post/delete_post.dart';
-import 'package:social_app/domain/usecase/post/get_post.dart';
+import 'package:social_app/domain/usecase/post/get_post_by_condition.dart';
 import 'package:social_app/domain/usecase/post/get_post_by_hashtag.dart';
 import 'package:social_app/domain/usecase/post/increment_view_usecase.dart';
 import 'package:social_app/domain/usecase/post/toggle_like_post.dart';
@@ -13,7 +13,7 @@ import 'package:social_app/domain/usecase/post/update_post.dart';
 
 class PostBloc extends Bloc<PostEvent, PostState> {
   final CreatePostUseCase _createPost;
-  final GetPostsUseCase _getPosts;
+  final GetPostsByConditionUseCase _getPostsByContion;
   final GetPostsByHashtagUseCase _getByHashtag;
   final ToggleLikeUseCase _toggleLike;
   final DeletePostUseCase _deletePost;
@@ -24,14 +24,14 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   PostBloc({
     required CreatePostUseCase createPost,
     required UpdatePostUseCase updatePost,
-    required GetPostsUseCase getPosts,
+    required GetPostsByConditionUseCase getPostsByContion,
     required GetPostsByHashtagUseCase getByHashtag,
     required ToggleLikeUseCase toggleLike,
     required DeletePostUseCase deletePost,
     required IncrementViewUseCase incrementView,
   }) : _createPost = createPost,
        _updatePost = updatePost,
-       _getPosts = getPosts,
+       _getPostsByContion = getPostsByContion,
        _getByHashtag = getByHashtag,
        _toggleLike = toggleLike,
        _deletePost = deletePost,
@@ -44,15 +44,29 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<PostViewIncreaseRequested>(_onIncreaseView);
     on<PostFetchRequested>(_onFetchAll);
     on<PostByHashtagRequested>(_onFetchByHashtag);
+    on<PostByUserIdRequested>(_onFetchByUserId);
     on<PostsArrived>((e, emit) => emit(PostListLoaded(e.posts)));
-    on<PostsError>((e, emit) => emit(PostFailure(e.error.toString())));
+
+    on<PostsError>((e, emit) {
+      print('==================== PostBloc Error ====================');
+      print('Error object: ${e.error}');
+      print('Stack trace: ${e.stackTrace}');
+      print('========================================================');
+
+      final errorMessage =
+          e.error.toString() ??
+          'An unknown error occurred while fetching posts.';
+      emit(PostFailure(errorMessage));
+    });
   }
 
   void _listen(Stream<List<PostEntity>> stream) {
     _postsSub?.cancel();
     _postsSub = stream.listen(
       (posts) => add(PostsArrived(posts)),
-      onError: (err) => add(PostsError(err)),
+      onError: (err, stackTrace) {
+        add(PostsError(err, stackTrace));
+      },
     );
   }
 
@@ -61,7 +75,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     Emitter<PostState> emit,
   ) async {
     emit(PostLoading());
-    _listen(_getPosts());
+    _listen(_getPostsByContion!());
   }
 
   Future<void> _onFetchByHashtag(
@@ -70,6 +84,14 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   ) async {
     emit(PostLoading());
     _listen(_getByHashtag(e.hashtag));
+  }
+
+  Future<void> _onFetchByUserId(
+    PostByUserIdRequested e,
+    Emitter<PostState> emit,
+  ) async {
+    emit(PostLoading());
+    _listen(_getPostsByContion(uid: e.userId));
   }
 
   Future<void> _onCreate(PostCreateRequested e, Emitter<PostState> emit) async {
@@ -86,7 +108,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         hashtags: e.hashtags,
       );
       emit(PostSuccess());
-    } catch (err) {
+    } catch (err, stackTrace) {
+      print('Error creating post: $err');
+      print('Stack trace: $stackTrace');
       emit(PostFailure(err.toString()));
     }
   }
@@ -110,7 +134,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
     try {
       await _toggleLike(e.post, e.userId);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      print('Error toggling like: $err');
+      print('Stack trace: $stackTrace');
       emit(PostFailure(err.toString()));
       emit(current);
     }
@@ -119,7 +145,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _onDelete(PostDeleteRequested e, Emitter<PostState> emit) async {
     try {
       await _deletePost(e.postId);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      print('Error deleting post: $err');
+      print('Stack trace: $stackTrace');
       emit(PostFailure(err.toString()));
     }
   }
@@ -130,7 +158,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   ) async {
     try {
       await _incrementView(e.postId);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      print('Error increasing view: $err');
+      print('Stack trace: $stackTrace');
       emit(PostFailure(err.toString()));
     }
   }
@@ -150,7 +180,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
           }).toList();
 
       emit(PostListLoaded(updatedList));
-    } catch (err) {
+    } catch (err, stackTrace) {
+      print('Error editing post: $err');
+      print('Stack trace: $stackTrace');
       emit(PostFailure(err.toString()));
       emit(current);
     }

@@ -16,6 +16,8 @@ class PostFailure extends PostState {
   const PostFailure(this.message);
   @override
   List<Object?> get props => [message];
+
+  get error => null;
 }
 
 class PostSuccess extends PostState {}

@@ -36,48 +36,45 @@ class _PostImagesViewerState extends State<PostImagesViewer> {
       );
     }
 
-    return Hero(
-      tag: widget.imageUrls.first,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          SizedBox(
-            height: 300,
-            width: double.infinity,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: widget.imageUrls.length,
-              onPageChanged: (i) => setState(() => _index = i),
-              itemBuilder:
-                  (_, i) => AssetsManager.showImage(
-                    widget.imageUrls[i],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 300,
-                  ),
-            ),
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        SizedBox(
+          height: 300,
+          width: double.infinity,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.imageUrls.length,
+            onPageChanged: (i) => setState(() => _index = i),
+            itemBuilder:
+                (_, i) => AssetsManager.showImage(
+                  widget.imageUrls[i],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 300,
+                ),
           ),
-          // Dots indicator
-          Positioned(
-            bottom: 8,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                widget.imageUrls.length,
-                (i) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: i == _index ? Colors.white : Colors.white54,
-                  ),
+        ),
+        // Dots indicator
+        Positioned(
+          bottom: 8,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              widget.imageUrls.length,
+              (i) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: i == _index ? Colors.white : Colors.white54,
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

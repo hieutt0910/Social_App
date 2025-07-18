@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage>
                   children: [
                     FeedTab(),
                     FeedTab(),
-                    FeedTab(), // Popular
+                    FeedTab(), 
                   ],
                 ),
               ),

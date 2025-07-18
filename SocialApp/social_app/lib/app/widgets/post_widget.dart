@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/utils/assets_manage.dart';
-import 'package:social_app/Data/model/user.dart';
+import 'package:social_app/data/model/user.dart';
 import 'package:social_app/domain/entity/post.dart';
 import 'package:social_app/style/app_text_style.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -31,7 +31,7 @@ class PostWidget extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
     final String? currentUid = user?.uid;
     final uid = post.userId;
-    final createdText = timeago.format(post.createdAt, locale: 'vi');
+    final createdText = timeago.format(post.createdAt, locale: 'en');
 
     return GestureDetector(
       onTap: () {
@@ -99,14 +99,11 @@ class PostWidget extends StatelessWidget {
               ),
             ),
             if (post.imageUrls.isNotEmpty)
-              Hero(
-                tag: post.imageUrls.first,
-                child: AssetsManager.showImage(
-                  post.imageUrls.first,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  height: 230,
-                ),
+              AssetsManager.showImage(
+                post.imageUrls.first,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                height: 230,
               ),
             if (post.caption.isNotEmpty)
               Padding(

@@ -5,7 +5,6 @@ import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/bloc/post/post_state.dart';
 import 'package:social_app/app/widgets/post_widget.dart';
 import '../../../Data/model/user.dart';
-import '../../utils/image_base64.dart';
 
 class HashtagPostsPage extends StatefulWidget {
   final String hashtag;
@@ -60,16 +59,13 @@ class _HashtagPostsPageState extends State<HashtagPostsPage> {
                       );
                     }
                     if (snapshot.hasError) {
-                      return ListTile(
-                        title: Text('Lỗi: ${snapshot.error}'),
-                      );
+                      return ListTile(title: Text('Lỗi: ${snapshot.error}'));
                     }
                     if (!snapshot.hasData || snapshot.data == null) {
                       return const ListTile(
                         title: Text('Không tìm thấy người dùng'),
                       );
                     }
-                    final user = snapshot.data!;
                     return PostWidget(
                       post: post,
                       onLike: () {},
