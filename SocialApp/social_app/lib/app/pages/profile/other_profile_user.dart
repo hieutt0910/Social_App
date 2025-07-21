@@ -292,48 +292,73 @@ class _UserProfilePageState extends State<OtherUserProfilePage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(4),
                     child: Row(
-                      children: List.generate(tabs.length, (index) {
-                        final isSelected = selectedTab == index;
-                        final count =
-                            index == 0 ? shots.length : collections.length;
+                      children: [
+                        // Shots Tab with BlocBuilder
+                        Expanded(
+                          child: BlocBuilder<PostBloc, PostState>(
+                            builder: (context, state) {
+                              // Lấy số lượng bài đăng từ PostBloc state
+                              final count = state is PostListLoaded ? state.posts.length : shots.length;
+                              final isSelected = selectedTab == 0;
 
-                        return Expanded(
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedTab = 0;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? const Color(0xFFF1F1FE) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "$count ${tabs[0]}", // tabs[0] is "Shots"
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: isSelected ? const Color(0xFF6A6BF4) : const Color(0xFFB8B8B8),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        // Collections Tab (không thay đổi)
+                        Expanded(
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
-                                selectedTab = index;
+                                selectedTab = 1;
                               });
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color:
-                                    isSelected
-                                        ? const Color(0xFFF1F1FE)
-                                        : Colors.transparent,
+                                color: selectedTab == 1 ? const Color(0xFFF1F1FE) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
                                 child: Text(
-                                  "$count ${tabs[index]}",
+                                  "${collections.length} ${tabs[1]}", // tabs[1] is "Collections"
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color:
-                                        isSelected
-                                            ? const Color(0xFF6A6BF4)
-                                            : const Color(0xFFB8B8B8),
+                                    color: selectedTab == 1 ? const Color(0xFF6A6BF4) : const Color(0xFFB8B8B8),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        );
-                      }),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 30),
-                  // Content Grid or Empty
                   selectedTab == 0
                       ? _buildPostGridOrEmpty()
                       : _buildCollections(),

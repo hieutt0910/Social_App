@@ -15,6 +15,9 @@ import 'package:social_app/domain/entity/post.dart';
 import 'package:social_app/style/app_text_style.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../../../Data/model/user.dart';
+import '../../utils/image_base64.dart';
+
 class ViewDetailPostPage extends StatefulWidget {
   final String postId;
   const ViewDetailPostPage({super.key, required this.postId});
@@ -78,12 +81,14 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
       ),
       IconButton(
         icon: AssetsManager.showImage('assets/icons/plus-circle-black.svg'),
-        onPressed: () {},
+        onPressed: () {
+          _showSaveToCollectionBottomSheet(context);
+        },
       ),
       IconButton(
         icon: AssetsManager.showImage('assets/icons/save-collection.svg'),
         onPressed: () {
-          _showSaveToCollectionBottomSheet(context);
+
         },
       ),
       const SizedBox(width: 8),
@@ -93,175 +98,15 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
   void _showSaveToCollectionBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Cho phép bottom sheet chiếm toàn bộ chiều cao cần thiết
+      backgroundColor: Colors.white, // Đặt nền trắng cho bottom sheet
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)), // Bo góc lớn hơn
       ),
       builder: (BuildContext context) {
-        return _buildSaveToCollectionBottomSheet();
+        // Sử dụng một StatefulWidget bên trong để quản lý trạng thái chọn
+        return SaveToCollectionSheet();
       },
-    );
-  }
-
-  Widget _buildSaveToCollectionBottomSheet() {
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
-      child: Container(
-        padding: const EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0, bottom: 16.0), // Padding để điều chỉnh vị trí
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 0, // Đặt sát mép trên
-              left: 0,
-              right: 0,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Center(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey, width: 0.5), // Viền xám
-                    ),
-                    child: CircleAvatar(
-                      radius: 18, // Bán kính của hình tròn bên trong
-                      backgroundColor: Colors.white, // Nền trắng
-                      child: const Icon(
-                        Icons.close,
-                        color: Colors.black,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.only(top: 40.0), // Đẩy nội dung xuống dưới nút đóng
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Save to collection',
-                        style: GoogleFonts.manrope(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Xử lý tạo bộ sưu tập mới
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white, // Loại bỏ màu nền mặc định
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                          padding: EdgeInsets.zero, // Loại bỏ padding mặc định
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFF888BF4),
-                                  Color(0xFF5151C6),
-                                ],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                              child: Text(
-                                'New Collection',
-                                style: GoogleFonts.manrope(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Your Collections',
-                    style: GoogleFonts.manrope(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: [
-                          _buildCollectionItem('PORTRAIT PHOTOGRAPHY', true),
-                          _buildCollectionItem('PORTRAIT PHOTOGRAPHY', false),
-                          _buildCollectionItem('PORTRAIT PHOTOGRAPHY', true),
-                          _buildCollectionItem('PORTRAIT PHOTOGRAPHY', false),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCollectionItem(String title, bool isSelected) {
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        border: Border.all(color: isSelected ? Colors.blue : Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(8.0),
-        color: Colors.blue[100],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.manrope(
-              fontSize: 12,
-              color: Colors.black,
-            ),
-          ),
-          if (isSelected)
-            const Icon(Icons.check_circle, color: Colors.blue, size: 16),
-        ],
-      ),
     );
   }
 
@@ -276,52 +121,86 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      AssetsManager.showImage(
-                        'assets/images/avatar.jpg',
-                        height: 40,
-                        width: 40,
-                        fit: BoxFit.cover,
-                        isCircle: true,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                FutureBuilder<AppUser?>(
+                  future: AppUser.getFromFirestore(post.userId),
+                  builder: (context, snapshot) {
+                    // Trong khi đang tải dữ liệu
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Row(
                           children: [
-                            Text(
-                              post.userId,
-                              style: GoogleFonts.manrope(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            Text(
-                              createdText,
-                              style: GoogleFonts.manrope(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
+                            CircleAvatar(radius: 20, backgroundColor: Color(0xFFEFEFEF)),
+                            SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CircleAvatar(radius: 5, backgroundColor: Color(0xFFEFEFEF)),
+                                SizedBox(height: 8),
+                                CircleAvatar(radius: 4, backgroundColor: Color(0xFFEFEFEF)),
+                              ],
+                            )
                           ],
                         ),
-                      ),
-                      if (currentUid != null && currentUid == post.userId)
-                        IconButton(
-                          icon: const Icon(
-                            Icons.more_vert,
-                            color: Colors.black,
+                      );
+                    }
+
+                    // Nếu không có dữ liệu hoặc có lỗi
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const ListTile(title: Text("Không tìm thấy người dùng"));
+                    }
+
+                    // Khi đã có dữ liệu người dùng (postUser)
+                    final postUser = snapshot.data!;
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          // Hiển thị avatar người dùng
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundImage: ImageUtils.getImageProvider(postUser.imageUrl),
                           ),
-                          onPressed: () {
-                            _showPostOptions(context, post);
-                          },
-                        ),
-                    ],
-                  ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Hiển thị tên người dùng
+                                Text(
+                                  '${postUser.name ?? ''} ${postUser.lastName ?? ''}'.trim(),
+                                  style: GoogleFonts.manrope(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  createdText,
+                                  style: GoogleFonts.manrope(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Nút tùy chọn (sửa/xóa)
+                          if (currentUid != null && currentUid == post.userId)
+                            IconButton(
+                              icon: const Icon(
+                                Icons.more_vert,
+                                color: Colors.black,
+                              ),
+                              onPressed: () {
+                                _showPostOptions(context, post);
+                              },
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
                 if (post.imageUrls.isNotEmpty)
@@ -536,4 +415,390 @@ class _ViewDetailPostPageState extends State<ViewDetailPostPage> {
       AssetsManager.showImage(icon),
     ],
   );
+}
+
+
+class SaveToCollectionSheet extends StatefulWidget {
+  const SaveToCollectionSheet({super.key});
+
+  @override
+  State<SaveToCollectionSheet> createState() => _SaveToCollectionSheetState();
+}
+
+class _SaveToCollectionSheetState extends State<SaveToCollectionSheet> {
+  final List<Map<String, dynamic>> collections = [
+    {
+      'title': 'PORTRAIT',
+      'isSelected': false,
+      'imagePath': 'assets/images/img_19.png'
+    },
+    {
+      'title': 'FASHION',
+      'isSelected': false,
+      'imagePath': 'assets/images/img_21.png'
+    },
+    {
+      'title': 'ART',
+      'isSelected': false,
+      'imagePath': 'assets/images/img_22.png'
+    },
+    {
+      'title': 'NATURE',
+      'isSelected': false,
+      'imagePath': 'assets/images/img_19.png'
+    },
+  ];
+
+  void _showCreateCollectionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return _CreateCollectionForm();
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Giả sử chiều cao của nút X (tính cả vùng nhấn) là 50px
+    const double buttonHeight = 50.0;
+
+    return Stack(
+      alignment: Alignment.topCenter,
+      clipBehavior: Clip.none,
+      children: [
+        // 1. Phần nội dung của Bottom Sheet
+        Padding(
+          padding: const EdgeInsets.only(top: buttonHeight / 2),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.6,
+            ),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16.0, (buttonHeight / 2) + 16.0, 16.0, 16.0),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Save to collection',
+                        style: GoogleFonts.manrope(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      // Nút "New Collection"
+                      ElevatedButton(
+                        onPressed: () {
+                          _showCreateCollectionSheet(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24.0),
+                          ),
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF888BF4), Color(0xFF5151C6)],
+                            ),
+                            borderRadius: BorderRadius.circular(24.0),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            child: Text(
+                              'New Collection',
+                              style: GoogleFonts.manrope(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Sub-header
+                  Text(
+                    'Your Collections',
+                    style: GoogleFonts.manrope(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Lưới các bộ sưu tập
+                  Expanded(
+                    child: GridView.builder(
+                      gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12.0,
+                        mainAxisSpacing: 12.0,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: collections.length,
+                      itemBuilder: (context, index) {
+                        return _buildCollectionItem(
+                          title: collections[index]['title'],
+                          imagePath: collections[index]['imagePath'],
+                          isSelected: collections[index]['isSelected'],
+                          onTap: () {
+                            setState(() {
+                              collections[index]['isSelected'] =
+                              !collections[index]['isSelected'];
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // 2. Nút Đóng (X)
+        Positioned(
+          top: -20,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey.shade300, width: 1),
+              color: Colors.white,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Widget để xây dựng mỗi ô trong lưới bộ sưu tập
+  Widget _buildCollectionItem({
+    required String title,
+    required String imagePath,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final Color themeColor = const Color(0xFF6A6BF4);
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.0),
+        child: Stack(
+          alignment: Alignment.center,
+          fit: StackFit.expand, // Đảm bảo các lớp con phủ kín
+          children: [
+            // Lớp 1: Ảnh nền
+            Image.asset(
+              imagePath,
+              fit: BoxFit.cover,
+              // Thêm errorBuilder để xử lý nếu ảnh bị lỗi
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey.shade200,
+                  child: const Center(child: Icon(Icons.image_not_supported)),
+                );
+              },
+            ),
+
+            // Lớp 2: Lớp phủ gradient màu đen để chữ luôn dễ đọc
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.6),
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.6),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+
+            // Lớp 3: Lớp phủ gradient màu tím (chỉ hiện khi được chọn)
+            if (isSelected)
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF888BF4).withOpacity(0.7),
+                      const Color(0xFF5151C6).withOpacity(0.7),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+              ),
+
+            // Lớp 4: Tiêu đề
+            Center(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  shadows: const [
+                    Shadow(blurRadius: 4.0, color: Colors.black54)
+                  ],
+                ),
+              ),
+            ),
+            // Dấu tích ở góc dưới bên phải khi được chọn
+            if (isSelected)
+              Positioned(
+                bottom: 150,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: themeColor,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CreateCollectionForm extends StatefulWidget {
+  @override
+  __CreateCollectionFormState createState() => __CreateCollectionFormState();
+}
+
+class __CreateCollectionFormState extends State<_CreateCollectionForm> {
+  final _nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Padding để đẩy nội dung lên khi bàn phím xuất hiện
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          clipBehavior: Clip.none,
+          children: [
+            // Nội dung form
+            Container(
+              margin: const EdgeInsets.only(top: 25),
+              padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                // <<< BỎ DÒNG mainAxisSize: MainAxisSize.min Ở ĐÂY >>>
+                // Giờ Column sẽ chiếm toàn bộ chiều cao được phép
+                children: [
+                  TextField(
+                    controller: _nameController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: 'Type name',
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
+                    style: GoogleFonts.manrope(),
+                  ),
+                  const SizedBox(height: 24),
+                  // Nút Create
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final collectionName = _nameController.text;
+                        if (collectionName.isNotEmpty) {
+                          print('Tạo collection mới: $collectionName');
+                          Navigator.pop(context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24.0),
+                        ),
+                        backgroundColor: const Color(0xFF6A6BF4),
+                      ),
+                      child: Text(
+                        'CREATE COLLECTION',
+                        style: GoogleFonts.manrope(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Nút đóng X
+            Positioned(
+              top: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300)
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 }
