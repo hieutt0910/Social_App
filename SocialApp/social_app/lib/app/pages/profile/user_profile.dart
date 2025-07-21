@@ -1,10 +1,12 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // Import BLoC
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
+import 'package:social_app/app/bloc/post/post_bloc.dart'; // Import BLoC
+import 'package:social_app/app/bloc/post/post_event.dart'; // Import BLoC
+import 'package:social_app/app/bloc/post/post_state.dart'; // Import BLoC
 import '../../../Data/model/collection.dart';
-import '../../../Data/model/shot.dart';
 import '../../../Data/model/user.dart';
 import '../../utils/image_base64.dart';
 
@@ -18,7 +20,7 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   int selectedTab = 0;
   AppUser? _user;
-  List<Shot> shots = [];
+  // `shots` list is no longer the primary source for the grid, but can be kept for initial count
   List<Collection> collections = [];
 
   final List<String> tabs = ["Shots", "Collections"];
@@ -31,19 +33,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadInitialData();
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _loadInitialData() async {
     final firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser != null) {
+      // Dispatch event to fetch posts via Bloc
+      context.read<PostBloc>().add(PostByUserIdRequested(firebaseUser.uid));
+
+      // Load user and collections data
       final appUser = await AppUser.getFromFirestore(firebaseUser.uid);
-      final userShots = await Shot.getUserShots(firebaseUser.uid);
       final userCollections = await Collection.getUserCollections(firebaseUser.uid);
-      if (appUser != null) {
+      if (mounted) {
         setState(() {
           _user = appUser;
-          shots = userShots;
           collections = userCollections;
         });
       }
@@ -56,6 +60,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
+          // Header (không thay đổi)
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -129,7 +134,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     style: const TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                   const SizedBox(height: 20),
-                  // Followers and Following
+                  // Followers and Following (không thay đổi)
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -189,51 +194,78 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     }),
                   ),
                   const SizedBox(height: 30),
+
+                  // *** START: UPDATED TAB BAR ***
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(4),
                     child: Row(
-                      children: List.generate(tabs.length, (index) {
-                        final isSelected = selectedTab == index;
-                        final count = index == 0 ? shots.length : collections.length;
-
-                        return Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedTab = index;
-                              });
+                      children: [
+                        // Shots Tab with BlocBuilder
+                        Expanded(
+                          child: BlocBuilder<PostBloc, PostState>(
+                            builder: (context, state) {
+                              final count = state is PostListLoaded ? state.posts.length : 0;
+                              final isSelected = selectedTab == 0;
+                              return GestureDetector(
+                                onTap: () => setState(() => selectedTab = 0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? const Color(0xFFF1F1FE) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "$count ${tabs[0]}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: isSelected ? const Color(0xFF6A6BF4) : const Color(0xFFB8B8B8),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
                             },
+                          ),
+                        ),
+                        // Collections Tab
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => selectedTab = 1),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFFF1F1FE)
-                                    : Colors.transparent,
+                                color: selectedTab == 1 ? const Color(0xFFF1F1FE) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
                                 child: Text(
-                                  "$count ${tabs[index]}",
+                                  "${collections.length} ${tabs[1]}",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color: isSelected
-                                        ? const Color(0xFF6A6BF4)
-                                        : const Color(0xFFB8B8B8),
+                                    color: selectedTab == 1 ? const Color(0xFF6A6BF4) : const Color(0xFFB8B8B8),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        );
-                      }),
+                        ),
+                      ],
                     ),
                   ),
+                  // *** END: UPDATED TAB BAR ***
+
                   const SizedBox(height: 30),
+
+                  // *** START: UPDATED CONTENT DISPLAY ***
                   selectedTab == 0
-                      ? _buildGridOrEmpty(shots)
+                      ? _buildPostGridOrEmpty() // Use new Bloc-based grid
                       : _buildCollections(),
+                  // *** END: UPDATED CONTENT DISPLAY ***
+
                   const SizedBox(height: 40),
                 ],
               ),
@@ -244,39 +276,52 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildGridOrEmpty(List<Shot> shots) {
-    if (shots.isEmpty) {
-      return Center(
-        child: Image.asset(
-          'assets/images/img_18.png',
-          width: 200,
-          height: 200,
-        ),
-      );
-    }
-
-    return MasonryGridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      itemCount: shots.length,
-      itemBuilder: (context, index) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            shots[index].imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Image.asset(
-              'assets/images/img_18.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-        );
+  // *** START: NEW BLOC-BASED WIDGET FOR POSTS ***
+  Widget _buildPostGridOrEmpty() {
+    return BlocBuilder<PostBloc, PostState>(
+      builder: (context, state) {
+        if (state is PostLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is PostListLoaded) {
+          if (state.posts.isEmpty) {
+            return Center(
+              child: Image.asset(
+                'assets/images/img_18.png',
+                width: 200,
+                height: 200,
+              ),
+            );
+          }
+          return MasonryGridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            itemCount: state.posts.length,
+            itemBuilder: (context, index) {
+              final post = state.posts[index];
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  post.imageUrls.first,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                    'assets/images/img_18.png',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              );
+            },
+          );
+        } else if (state is PostFailure) {
+          return Center(child: Text('Error: ${state.error}'));
+        }
+        return const SizedBox.shrink(); // Return empty for initial state
       },
     );
   }
+  // *** END: NEW BLOC-BASED WIDGET FOR POSTS ***
 
   Widget _buildCollections() {
     if (collections.isEmpty) {
@@ -284,7 +329,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
         child: Image.asset('assets/images/img_18.png', width: 200, height: 200),
       );
     }
-
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -320,7 +364,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ),
                     ),
                   ),
-                  // Title text in center
                   Positioned.fill(
                     child: Container(
                       alignment: Alignment.center,
