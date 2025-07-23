@@ -1,11 +1,8 @@
 abstract class UserProfileEvent {}
 
-class LoadUserProfileEvent extends UserProfileEvent {
-  final String uid;
-  LoadUserProfileEvent(this.uid);
-}
+// Sự kiện yêu cầu tải dữ liệu (thông tin user và collections)
+class UserProfileDataRequested extends UserProfileEvent {
+  final String userId;
 
-class ChangeTabEvent extends UserProfileEvent {
-  final int tabIndex;
-  ChangeTabEvent(this.tabIndex);
+  UserProfileDataRequested(this.userId);
 }

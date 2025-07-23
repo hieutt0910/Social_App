@@ -36,7 +36,6 @@ class _SignUpPageState extends State<SignUpPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Verification link with OTP sent to your email. Please check your inbox.')),
           );
-          context.go('/verify', extra: {'email': _emailController.text.trim(), 'fromRoute': 'sign_up'});
         } else if (state is SignUpFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.error)),

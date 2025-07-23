@@ -7,40 +7,36 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DynamicLinksHandler {
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  static final StreamController<void> _linkHandledStream = StreamController<void>.broadcast();
 
-  static Stream<void> get onLinkHandled => _linkHandledStream.stream;
-
-  static Future<void> initDynamicLinks(BuildContext context) async {
-    FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData? dynamicLink) async {
-      final Uri? deepLink = dynamicLink?.link;
-      print('Received deep link: $deepLink');
+  static Future<void> initDynamicLinks(GoRouter router) async {
+    // Lắng nghe khi app đang mở
+    FirebaseDynamicLinks.instance.onLink.listen((dynamicLink) async {
+      final Uri? deepLink = dynamicLink.link;
       if (deepLink != null) {
-        await _handleDynamicLink(context, deepLink);
-        _linkHandledStream.add(null);
+        await _handleDynamicLink(router, deepLink);
       }
     });
 
-    final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
+    // Xử lý link ban đầu khi app được mở từ trạng thái terminated
+    final initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
     if (initialLink != null) {
       final Uri? deepLink = initialLink.link;
-      print('Received initial link: $deepLink');
       if (deepLink != null) {
-        await _handleDynamicLink(context, deepLink);
-        _linkHandledStream.add(null);
+        await _handleDynamicLink(router, deepLink);
       }
     }
   }
 
-  static Future<void> _handleDynamicLink(BuildContext context, Uri deepLink) async {
+  static Future<void> _handleDynamicLink(GoRouter router, Uri deepLink) async {
     print('Handling deep link: $deepLink');
     final prefs = await SharedPreferences.getInstance();
     final email = deepLink.queryParameters['email'] ?? prefs.getString('pending_email') ?? '';
     final otp = deepLink.queryParameters['otp'];
+    final fromRoute = deepLink.queryParameters['fromRoute'] ?? 'sign_in';
 
     print('Email from link or prefs: $email');
     print('OTP from link: $otp');
+    print('Route retrieved from SharedPreferences: $fromRoute');
 
     if (otp != null) {
       await prefs.setString('pending_otp', otp);
@@ -48,13 +44,13 @@ class DynamicLinksHandler {
     }
 
     if (email.isNotEmpty) {
-      context.go('/verify', extra: {'email': email, 'fromRoute': 'sign_in'});
+      router.go('/verify', extra: {'email': email, 'fromRoute': fromRoute});
     } else {
       print('No valid email found in link or SharedPreferences');
     }
   }
 
-  static Future<void> sendSignInLink(String email, {Map<String, String>? customParams, String? fromRoute}) async {
+  static Future<void> sendSignInLink(String email, {String? fromRoute}) async {
     try {
       String otp = (100000 + Random().nextInt(900000)).toString();
       String url = 'https://socialapp678.page.link/verify?otp=$otp&email=$email&fromRoute=$fromRoute';
@@ -63,7 +59,7 @@ class DynamicLinksHandler {
       var actionCodeSettings = ActionCodeSettings(
         url: url,
         handleCodeInApp: true,
-        androidPackageName: 'com.example.final_project',
+        androidPackageName: 'com.example.social_app',
         androidInstallApp: true,
         androidMinimumVersion: '12',
         dynamicLinkDomain: 'socialapp678.page.link',
@@ -89,7 +85,4 @@ class DynamicLinksHandler {
     }
   }
 
-  static void dispose() {
-    _linkHandledStream.close();
-  }
 }

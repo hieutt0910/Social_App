@@ -1,20 +1,33 @@
+import 'dart:io';
 
-import '../../../Data/model/user.dart';
+import '../../../data/model/user.dart';
 
-abstract class EditProfileState {}
+enum EditProfileStatus { initial, loading, success, failure }
 
-class EditProfileInitial extends EditProfileState {}
+class EditProfileState {
+  final EditProfileStatus status;
+  final AppUser? user;
+  final File? selectedImage;
+  final String? error;
 
-class EditProfileLoading extends EditProfileState {}
+  const EditProfileState({
+    this.status = EditProfileStatus.initial,
+    this.user,
+    this.selectedImage,
+    this.error,
+  });
 
-class EditProfileLoaded extends EditProfileState {
-  final AppUser user;
-  EditProfileLoaded(this.user);
-}
-
-class EditProfileSuccess extends EditProfileState {}
-
-class EditProfileError extends EditProfileState {
-  final String message;
-  EditProfileError(this.message);
+  EditProfileState copyWith({
+    EditProfileStatus? status,
+    AppUser? user,
+    File? selectedImage,
+    String? error,
+  }) {
+    return EditProfileState(
+      status: status ?? this.status,
+      user: user ?? this.user,
+      selectedImage: selectedImage ?? this.selectedImage,
+      error: error ?? this.error,
+    );
+  }
 }

@@ -1,10 +1,13 @@
 import 'package:get_it/get_it.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:social_app/app/bloc/account/account_bloc.dart';
 import 'package:social_app/app/bloc/changespw/changepw_bloc.dart';
+import 'package:social_app/app/bloc/edit_profile/edit_profile_bloc.dart';
 import 'package:social_app/app/bloc/forgotpassword/forgotpw_bloc.dart';
 import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
 import 'package:social_app/app/bloc/signin/signin_bloc.dart';
 import 'package:social_app/app/bloc/signup/signup_bloc.dart';
+import 'package:social_app/app/bloc/user_profile/user_profile_bloc.dart';
 import 'package:social_app/app/bloc/verify/verify_bloc.dart';
 import 'package:social_app/data/datasources/firebase/post_remote_data_source_impl.dart';
 
@@ -60,6 +63,9 @@ Future<void> initDI() async {
   sl.registerFactory(() => SignUpBloc());
   sl.registerFactory(() => ForgotPasswordBloc());
   sl.registerFactory(() => ChangePasswordBloc());
+  sl.registerFactory(() => AccountBloc());
+  sl.registerFactory(() => UserProfileBloc());
+  sl.registerFactory(() => EditProfileBloc());
 
   // Đăng ký VerifyBloc với tham số email và fromRoute
   sl.registerFactoryParam<VerifyBloc, String, String>(

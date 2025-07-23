@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../Data/model/collection.dart';
-import '../../../Data/model/shot.dart';
+import '../../../data/model/collection.dart';
+import '../../../data/model/shot.dart';
 
 class CollectionDetailPage extends StatelessWidget {
   final Collection collection;

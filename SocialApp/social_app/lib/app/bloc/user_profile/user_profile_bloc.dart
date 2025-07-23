@@ -1,32 +1,38 @@
 import 'package:bloc/bloc.dart';
-import '../../../Data/model/user.dart';
+import 'package:social_app/data/model/collection.dart';
+import 'package:social_app/data/model/user.dart';
+
 import 'user_profile_event.dart';
 import 'user_profile_state.dart';
 
+
 class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
-  UserProfileBloc() : super(UserProfileInitial()) {
-    on<LoadUserProfileEvent>(_onLoadUserProfile);
-    on<ChangeTabEvent>(_onChangeTab);
+  UserProfileBloc() : super(UserProfileLoading()) {
+    on<UserProfileDataRequested>(_onDataRequested);
   }
 
-  Future<void> _onLoadUserProfile(LoadUserProfileEvent event, Emitter<UserProfileState> emit) async {
+  Future<void> _onDataRequested(
+      UserProfileDataRequested event,
+      Emitter<UserProfileState> emit,
+      ) async {
     emit(UserProfileLoading());
     try {
-      final user = await AppUser.getFromFirestore(event.uid);
+      // Dùng Future.wait để tải thông tin user và collections song song cho hiệu năng tốt hơn
+      final results = await Future.wait([
+        AppUser.getFromFirestore(event.userId),
+        Collection.getUserCollections(event.userId),
+      ]);
+
+      final user = results[0] as AppUser?;
+      final collections = results[1] as List<Collection>;
+
       if (user != null) {
-        emit(UserProfileLoaded(user));
+        emit(UserProfileLoadSuccess(user: user, collections: collections));
       } else {
-        emit(UserProfileError('User not found'));
+        emit(UserProfileLoadFailure("User not found."));
       }
     } catch (e) {
-      emit(UserProfileError(e.toString()));
-    }
-  }
-
-  void _onChangeTab(ChangeTabEvent event, Emitter<UserProfileState> emit) {
-    if (state is UserProfileLoaded) {
-      final currentState = state as UserProfileLoaded;
-      emit(currentState.copyWith(selectedTab: event.tabIndex));
+      emit(UserProfileLoadFailure(e.toString()));
     }
   }
 }
