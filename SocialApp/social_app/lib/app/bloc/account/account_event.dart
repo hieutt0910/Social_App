@@ -1,8 +1,5 @@
 abstract class AccountEvent {}
 
-class LoadUserEvent extends AccountEvent {
-  final String uid;
-  LoadUserEvent(this.uid);
-}
+class AccountDataRequested extends AccountEvent {}
 
-class SignOutEvent extends AccountEvent {}
+class AccountSignedOut extends AccountEvent {}

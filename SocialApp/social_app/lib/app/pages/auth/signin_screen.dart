@@ -20,17 +20,6 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final Map<String, dynamic>? args = GoRouterState.of(context).extra as Map<String, dynamic>?;
-      if (args != null && args['email'] != null) {
-        _emailController.text = args['email'];
-      }
-    });
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -48,9 +37,8 @@ class _SignInPageState extends State<SignInPage> {
             context.go('/set-new-password', extra: {'email': _emailController.text.trim()});
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Liên kết xác thực với OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến.')),
+              const SnackBar(content: Text('Verification link with OTP sent to your email. Please check your inbox.')),
             );
-            context.go('/verify', extra: {'email': _emailController.text.trim(), 'fromRoute': 'sign_in'});
           }
         } else if (state is SignInFailure) {
           ScaffoldMessenger.of(context).showSnackBar(

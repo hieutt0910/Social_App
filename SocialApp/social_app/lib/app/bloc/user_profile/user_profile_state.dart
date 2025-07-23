@@ -1,26 +1,22 @@
-import '../../../Data/model/user.dart';
+import '../../../data/model/collection.dart';
+import '../../../data/model/user.dart';
 
 abstract class UserProfileState {}
 
-class UserProfileInitial extends UserProfileState {}
-
+// Trạng thái đang tải
 class UserProfileLoading extends UserProfileState {}
 
-class UserProfileLoaded extends UserProfileState {
+// Trạng thái tải thành công, chứa cả user và collections
+class UserProfileLoadSuccess extends UserProfileState {
   final AppUser user;
-  final int selectedTab;
+  final List<Collection> collections;
 
-  UserProfileLoaded(this.user, {this.selectedTab = 0});
-
-  UserProfileLoaded copyWith({AppUser? user, int? selectedTab}) {
-    return UserProfileLoaded(
-      user ?? this.user,
-      selectedTab: selectedTab ?? this.selectedTab,
-    );
-  }
+  UserProfileLoadSuccess({required this.user, required this.collections});
 }
 
-class UserProfileError extends UserProfileState {
-  final String message;
-  UserProfileError(this.message);
+// Trạng thái tải thất bại
+class UserProfileLoadFailure extends UserProfileState {
+  final String error;
+
+  UserProfileLoadFailure(this.error);
 }

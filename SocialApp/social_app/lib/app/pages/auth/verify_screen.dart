@@ -22,31 +22,19 @@ class VerifyPage extends StatefulWidget {
 
 class _VerifyPageState extends State<VerifyPage> {
   final TextEditingController _otpController = TextEditingController();
-  StreamSubscription<void>? _linkHandledSubscription;
-  Timer? _refreshTimer;
+
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _linkHandledSubscription = DynamicLinksHandler.onLinkHandled.listen((_) {
-        if (mounted) {
-          context.read<VerifyBloc>().add(const VerifyOTPEvent(''));
-        }
-      });
-      _refreshTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
-        if (mounted) {
-          context.read<VerifyBloc>().add(const VerifyOTPEvent(''));
-        }
-      });
+      context.read<VerifyBloc>().add(const VerifyOTPEvent(''));
     });
   }
 
   @override
   void dispose() {
     _otpController.dispose();
-    _linkHandledSubscription?.cancel();
-    _refreshTimer?.cancel();
     super.dispose();
   }
 

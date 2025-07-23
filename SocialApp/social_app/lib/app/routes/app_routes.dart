@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:social_app/Data/model/collection.dart';
+import 'package:social_app/data/model/collection.dart';
 import 'package:social_app/app/bloc/setnewpw/setnewpw_bloc.dart';
 import 'package:social_app/app/bloc/verify/verify_bloc.dart';
 import 'package:social_app/app/pages/post/edit_post_page.dart';
@@ -20,7 +20,6 @@ import 'package:social_app/app/pages/search_post/hashtag_post.dart';
 import 'package:social_app/app/pages/search_post/search_topic.dart';
 import 'package:social_app/app/pages/splash/splash_screen.dart';
 import 'package:social_app/app/pages/widget_tree.dart';
-import 'package:social_app/data/repositories/dynamic_link_handler.dart';
 import 'package:social_app/di.dart';
 import 'package:social_app/domain/entity/post.dart';
 
@@ -33,7 +32,6 @@ class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
-    navigatorKey: DynamicLinksHandler.navigatorKey,
     initialLocation: '/splash',
     routes: [
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),

@@ -1,30 +1,14 @@
 abstract class EditProfileEvent {}
 
-class LoadEditProfileEvent extends EditProfileEvent {
-  final String uid;
-  LoadEditProfileEvent(this.uid);
-}
+// Yêu cầu tải dữ liệu ban đầu của người dùng
+class EditProfileDataRequested extends EditProfileEvent {}
 
-class UpdateProfileEvent extends EditProfileEvent {
-  final String uid;
-  final String name;
-  final String lastName;
-  final String location;
-  final String? imageUrl;
-  final String? instagram;
-  final String? twitter;
-  final String? website;
-  final String? terms;
+// Người dùng đã chọn một ảnh mới
+class EditProfileImagePicked extends EditProfileEvent {}
 
-  UpdateProfileEvent({
-    required this.uid,
-    required this.name,
-    required this.lastName,
-    required this.location,
-    this.imageUrl,
-    this.instagram,
-    this.twitter,
-    this.website,
-    this.terms,
-  });
+// Người dùng nhấn nút lưu thay đổi, gửi kèm tất cả dữ liệu từ form
+class EditProfileChangesSaved extends EditProfileEvent {
+  final Map<String, String> data;
+
+  EditProfileChangesSaved(this.data);
 }

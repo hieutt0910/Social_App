@@ -1,20 +1,19 @@
-
-import '../../../Data/model/user.dart';
+import '../../../data/model/user.dart';
 
 abstract class AccountState {}
 
-class AccountInitial extends AccountState {}
-
 class AccountLoading extends AccountState {}
 
-class AccountLoaded extends AccountState {
+class AccountLoadSuccess extends AccountState {
   final AppUser user;
-  AccountLoaded(this.user);
+
+  AccountLoadSuccess(this.user);
 }
 
-class AccountError extends AccountState {
-  final String message;
-  AccountError(this.message);
+class AccountLoadFailure extends AccountState {
+  final String error;
+
+  AccountLoadFailure(this.error);
 }
 
-class AccountSignedOut extends AccountState {}
+class AccountSignOutSuccess extends AccountState {}

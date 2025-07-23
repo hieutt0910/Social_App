@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
-import 'package:social_app/Data/model/collection.dart';
+import 'package:social_app/data/model/collection.dart';
 import 'package:social_app/app/bloc/post/post_bloc.dart';
 import 'package:social_app/app/bloc/post/post_event.dart';
 import 'package:social_app/app/bloc/post/post_state.dart';

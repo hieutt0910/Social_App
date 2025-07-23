@@ -29,7 +29,6 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('pending_email', event.email);
 
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: event.email);
       await DynamicLinksHandler.sendSignInLink(event.email, fromRoute: 'forgot_password');
       emit(ForgotPasswordSuccess());
     } on FirebaseAuthException catch (e) {
